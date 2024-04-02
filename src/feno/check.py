@@ -2,6 +2,7 @@ from typing import Tuple
 import os
 import glob
 from os.path import getmtime
+import argparse
 
 
 class Check:
@@ -26,12 +27,25 @@ class Check:
 
     # retorna se tem atualização e o arquivo mais recente
     @staticmethod
-    def check_rebuild(source: str, target: str) -> Tuple[str, bool]:
+    def need_rebuild(source: str, target: str) -> Tuple[str, bool]:
         if not os.path.exists(target):
             return [source, True]
-        [source_path, source_time] = Check.last_update(source)
-        [target_path, target_time] = Check.last_update(target)
+        [_source_path, source_time] = Check.last_update(source)
+        [_target_path, target_time] = Check.last_update(target)
         # source tem novas alterações
-        return (source_path, source_time > target_time)
+        return source_time > target_time
 
 
+def main():
+    parser = argparse.ArgumentParser(description='Check if the source has changed')
+    parser.add_argument('source', type=str, help='Source directory')
+    parser.add_argument('target', type=str, help='Target file')
+
+    args = parser.parse_args()
+
+    need = Check.need_rebuild(args.source, args.target)
+    print("Precisa Rebuild" if need else "Não precisa Rebuild")
+
+
+if __name__ == "__main__":
+    main()

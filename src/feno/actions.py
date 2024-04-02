@@ -21,7 +21,6 @@ class Actions:
         self.target = norm_join(self.cache, "mapi.json")
         self.source_dir = source_dir
         self.hook = os.path.basename(os.path.abspath(source_dir))
-        Log.debug("hook", self.hook)
         self.source_readme = norm_join(self.source_dir, "Readme.md")
         self.remote_readme = norm_join(self.cache, "Readme.md")
         self.target_html = norm_join(self.cache, "q.html")
@@ -36,10 +35,10 @@ class Actions:
 
     def validate(self):
         if not os.path.isdir(self.source_dir):
-            print(f"fail: {self.source_dir} is not a directory")
+            print(f"\n    fail: {self.source_dir} is not a directory")
             return False
         if not os.path.isfile(self.source_readme):
-            print(f"fail: {self.source_readme} not found")
+            print(f"\n    fail: {self.source_readme} not found")
             return False
         return True
 
@@ -56,9 +55,13 @@ class Actions:
         os.makedirs(self.cache)
         return self
     
-    def check_rebuild(self):
-        [_path, changes_found] = Check.check_rebuild(self.source_dir, self.target)
-        return changes_found
+    def need_rebuild(self):
+        if Check.need_rebuild(self.source_dir, self.target):
+            Log.resume("Changes ", end="")
+            return True
+            
+        Log.verbose(f"    no changes in {self.source_dir}")
+        return False
     
     def remote_md(self, disable_preamble=False):
         cfg = RemoteCfg()
@@ -67,28 +70,33 @@ class Actions:
         else:
             cfg_path = RemoteCfg.search_cfg_path(self.source_dir)
             if cfg_path is None:
-                Log.write("fail: no remote.cfg found in the parent folders")
-                return
-            cfg.read(cfg_path)
+                print("\n    fail: no remote.cfg found in the parent folders")
+                print("\n    fail: proceeding without make absolute links")
+            else:
+                Log.verbose(f"    remote.cfg: {cfg_path}")
+                cfg.read(cfg_path)
         RemoteMd.run(cfg, self.source_readme, self.remote_readme, self.hook, disable_preamble)
-        Log.write("RemoteMd ")
+        Log.resume("AbsoluteMd ", end="")
     
     # uses pandoc to generate html from markdown
     def html(self):
         title = Title.extract_title(self.source_readme)
         HTML.generate_html(title, self.remote_readme, self.target_html, True)
-        Log.write("HTML ")
+        Log.resume("HTML ", end="")
+        Log.verbose(f"    HTML  file: {self.target_html}")
 
     # uses tko to generate cases file
     def build_cases(self):
         Cases.run(self.cases, self.source_readme, self.source_dir)
-        Log.write("Cases ")
+        Log.resume("Cases ", end="")
+        Log.verbose(f"    Cases file: {self.cases}")
 
     def copy_drafts(self):
         source_src = norm_join(self.source_dir, "src")
         if os.path.isdir(source_src):
+            Log.resume("Drafts ", end="")
+            Log.verbose(f"    Drafts dir: {source_src}")
             Tree.deep_filter_copy(source_src, self.cache_src, self.draft_tree, 5)
-            Log.debug("Drafts ", self.draft_tree)
 
     def run_local_sh(self):
         local_sh = norm_join(self.source_dir, "local.sh")
@@ -97,23 +105,29 @@ class Actions:
             os.chdir(self.source_dir)
             subprocess.run("bash local.sh", shell=True)
             os.chdir(actual_chdir)
+            Log.resume("Local.sh ", end="")
+            Log.verbose(f"    local.sh executed")
 
     def init_vpl(self):
         self.vpl = JsonVPL(self.title, open(self.target_html).read())
         self.vpl.set_cases(self.cases)
         if self.vpl.load_config_json(self.config_json, self.source_dir):
-            Log.write("Required ")
+            Log.resume("Required ", end="")
+            Log.verbose(f"    Config mapi file: {self.config_json}")
         if self.vpl.load_draft_tree(self.draft_tree, self.cache_src):
-            Log.write("Drafts ")
-        Log.write("] ")
+            Log.resume("Drafts ", end="")
 
     def create_mapi(self):
         open(self.mapi_json, "w").write(str(self.vpl) + "\n")
-        Log.write("DONE")
+        Log.resume("Mapi ", end="")
+        Log.verbose(f"    Mapi  file: {self.mapi_json}")
 
-    def clean(self):
-        os.remove(self.cases)
-        os.remove(self.target_html)
+    def clean(self, keep: bool):
+        if not keep:
+            Log.resume("Cleaning ", end="")
+            Log.verbose("    Cleaning  : html and cases files")
+            os.remove(self.cases)
+            os.remove(self.target_html)
 
     # run mdpp script on source readme
     def update_markdown(self):

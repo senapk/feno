@@ -20,6 +20,7 @@ class RemoteCfg:
         self.user = ""
         self.repo = ""
         self.base = ""
+        self.branch = "master"
 
     def read(self, cfg_path: str):
         if not os.path.isfile(cfg_path):
@@ -31,6 +32,8 @@ class RemoteCfg:
         self.user = config["DEFAULT"]["user"]
         self.repo = config["DEFAULT"]["rep"]
         self.base = config["DEFAULT"]["base"]
+        if "branch" in config["DEFAULT"]:
+            self.branch = config["DEFAULT"]["branch"]
 
     @staticmethod
     def search_cfg_path(source_dir) -> Optional[str]:
@@ -42,7 +45,6 @@ class RemoteCfg:
         while path != "/":
             cfg_path = os.path.join(path, "remote.cfg")
             if os.path.isfile(cfg_path):
-                Log.debug("remote.cfg found at: ", cfg_path)
                 return cfg_path
             path = os.path.dirname(path)
         
@@ -81,9 +83,9 @@ class Absolute:
     def relative_to_absolute(content: str, cfg: RemoteCfg, hook):
         base_hook = os.path.join(cfg.base, hook)
         user_repo = os.path.join(cfg.user, cfg.repo)
-        remote_raw    = os.path.join("https://raw.githubusercontent.com", user_repo, "master" , base_hook)
-        remote_view    = os.path.join("https://github.com/", user_repo, "blob/master", base_hook)
-        remote_folder = os.path.join("https://github.com/", user_repo, "tree/master", base_hook)
+        remote_raw    = os.path.join("https://raw.githubusercontent.com", user_repo, cfg.branch , base_hook)
+        remote_view    = os.path.join("https://github.com/", user_repo, "blob", cfg.branch, base_hook)
+        remote_folder = os.path.join("https://github.com/", user_repo, "tree", cfg.branch, base_hook)
         return Absolute.__replace_remote(content, remote_raw, remote_view, remote_folder)
 
     @staticmethod
@@ -112,7 +114,7 @@ class RemoteMd:
         base_hook = os.path.join(cfg.base, hook)
 
         lines = content.split("\n")
-        online_readme_link = os.path.join("https://github.com", cfg.user, cfg.repo, "blob/master", base_hook, "Readme.md")
+        online_readme_link = os.path.join("https://github.com", cfg.user, cfg.repo, "blob", cfg.branch, base_hook, "Readme.md")
         tkodown = "tko down " + cfg.user[6:] + " " + hook
         lines = RemoteMd.insert_preamble(lines, online_readme_link, tkodown)
         return "\n".join(lines)
@@ -120,9 +122,10 @@ class RemoteMd:
     @staticmethod
     def run(remote_cfg: RemoteCfg, source: str, target: str, hook, disable_preamble: bool) -> bool:    
         content = open(source).read()
-        if not disable_preamble:
-            content = RemoteMd.insert_qxcode_preamble(remote_cfg, content, hook)
-        content = Absolute.relative_to_absolute(content, remote_cfg, hook)
+        if remote_cfg is not None:
+            if not disable_preamble:
+                content = RemoteMd.insert_qxcode_preamble(remote_cfg, content, hook)
+            content = Absolute.relative_to_absolute(content, remote_cfg, hook)
         open(target, "w").write(content)
 
 if __name__ == "__main__":

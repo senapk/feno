@@ -32,9 +32,9 @@ class Tree:
             processed = Filter(filename).process(content)
             with open(destiny, "w") as f:
                 if processed != content:
-                    Log.debug("(filtered): ", end="")
+                    Log.verbose("         draft: ", end="")
                 else:
-                    Log.debug("(        ): ", end="")
+                    Log.verbose("         =====: ", end="")
                 f.write(processed)
-                Log.debug(destiny)
+                Log.verbose(destiny)
 

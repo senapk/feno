@@ -52,7 +52,7 @@ setup(
                     'test': ['coverage'],
                     },  # Optional
 
-    entry_points={'console_scripts': ['feno=feno.__main__:main', 'mdpp=feno.mdpp:main', 'filter=feno.filter:main', 'indexer=feno.indexer:main'], },
+    entry_points={'console_scripts': ['feno=feno.__main__:main', 'mdpp=feno.mdpp:main', 'filter=feno.filter:main', 'indexer=feno.indexer:main', 'check=feno.check:main'], },
 
     project_urls={'Bug Reports': 'https://github.com/senapk/feno/issues',
                   'Source': 'https://github.com/senapk/feno/',
