@@ -81,7 +81,7 @@ class Actions:
     # uses pandoc to generate html from markdown
     def html(self):
         title = Title.extract_title(self.source_readme)
-        HTML.generate_html(title, self.remote_readme, self.target_html, True)
+        HTML.generate_html_with_pandoc(title, self.remote_readme, self.target_html, True)
         Log.resume("HTML ", end="")
         Log.verbose(f"    HTML  file: {self.target_html}")
 
