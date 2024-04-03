@@ -58,9 +58,10 @@ class Actions:
     def need_rebuild(self):
         if Check.need_rebuild(self.source_dir, self.target):
             Log.resume("Changes ", end="")
+            Log.verbose(f"changes in {self.source_dir}")
             return True
             
-        Log.verbose(f"    no changes in {self.source_dir}")
+        Log.verbose("")
         return False
     
     def remote_md(self, disable_preamble=False):
@@ -131,4 +132,6 @@ class Actions:
 
     # run mdpp script on source readme
     def update_markdown(self):
-        Mdpp.update_file(self.source_readme)
+        if Mdpp.update_file(self.source_readme):
+            Log.resume("Mdpp ", end="")
+            Log.verbose(f"    Mdpp updading")

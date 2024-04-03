@@ -33,7 +33,7 @@ def main():
 
         actions = Actions(target, args.remote)
         Log.resume(hook, end=": [ ")
-        Log.verbose(hook)
+        Log.verbose(hook, end=": ")
 
         if not actions.validate():
             continue

@@ -1,5 +1,7 @@
 # Changelog
 
+- 0.0.7
+  - atualizando filter adicionado o modo de manter os comentários
 - 0.0.6
   - Avisando se chamar o update sem argumentos
 - 0.0.5

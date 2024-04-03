@@ -250,12 +250,12 @@ class Main:
 
 class Mdpp:
     @staticmethod
-    def update_file(target, action: Action = Action.RUN):
+    def update_file(target, action: Action = Action.RUN, quiet: bool = False) -> bool:
         path = Main.fix_path(target)
         target_dir = os.path.dirname(path)
         found, original = Main.open_file(path)
         if not found:
-            return
+            return False
         updated = original
         updated_toc = Toc.execute(updated, action)
         updated_toc = Toch.execute(updated_toc, action)
@@ -269,8 +269,10 @@ class Mdpp:
             with open(path, "w") as f:
                 f.write(updated)
                 hook = os.path.abspath(path).split(os.sep)[-2]
-                print(hook + " : mdpp updading")
-    
+                return True
+
+        return False
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('targets', metavar='T', type=str, nargs='*', help='Readmes or folders')
@@ -290,7 +292,7 @@ def main():
     action = Action.RUN if not args.clean else Action.CLEAN
 
     for target in args.targets:
-        Mdpp.update_file(target, action)
+        Mdpp.update_file(target, action, args.quiet)
         
 
 if __name__ == '__main__':
