@@ -1,5 +1,10 @@
 # Changelog
 
+- 0.0.9
+  - atualizando filter para remover comentários
+  - fix: bug do filter no modo manual
+- 0.0.8
+  - atualizando mdpp para remover comentários
 - 0.0.7
   - atualizando filter adicionado o modo de manter os comentários
 - 0.0.6

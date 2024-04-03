@@ -143,6 +143,21 @@ class Load:
         return ""
 
     @staticmethod
+    def rmcom(target: str, content: str) -> str:
+        com = "//"
+        if target.endswith(".py"):
+            com = "#"
+        if target.endswith(".puml"):
+            com = "'"
+        lines = content.split("\n")
+        output = []
+        for line in lines:
+            if not line.lstrip().startswith(com):
+                output.append(line)
+        return "\n".join(output)
+
+
+    @staticmethod
     def execute(content: str, target_dir, action: Action = Action.RUN) -> str:
         new_content = ""
         last = 0
@@ -161,6 +176,10 @@ class Load:
 
             filter: List[str] = [tag for tag in words if tag.startswith("filter")]
             words = [tag for tag in words if not tag.startswith("filter")]
+
+            rmcom: List[str] = [tag for tag in words if tag.startswith("rmcom")]
+            words = [tag for tag in words if not tag.startswith("rmcom")]
+
 
             extract: List[str] = [tag for tag in words if tag.startswith("extract")]
             words = [tag for tag in words if not tag.startswith("extract")]
@@ -187,6 +206,11 @@ class Load:
                 if os.path.isfile(abspath):
                     if len(filter) > 0:
                         data = Filter(path).process(open(abspath).read()) + "\n"
+                        new_content += data
+                        if data[-1] != "\n":
+                            new_content += "\n"
+                    elif len(rmcom) > 0:
+                        data =  Load.rmcom(abspath, open(abspath).read()) + "\n"
                         new_content += data
                         if data[-1] != "\n":
                             new_content += "\n"

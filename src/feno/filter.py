@@ -55,15 +55,19 @@ class LegacyFilter:
                     output.append(line)
         return "\n".join(output)
 
+def get_comment(filename: str) -> str:
+    com = "//"
+    if filename.endswith(".py"):
+        com = "#"
+    elif filename.endswith(".puml"):
+        com = "'"
+    return com
+
 class Filter:
     def __init__(self, filename):
         self.filename = filename
         self.stack = [Mark("==", 0)]
-        self.com = "//"
-        if filename.endswith(".py"):
-            self.com = "#"
-        elif filename.endswith(".puml"):
-            self.com = "'"
+        self.com = get_comment(filename)
 
     def get_marker(self) -> str:
         return self.stack[-1].marker
@@ -124,10 +128,18 @@ def open_file(path):
         print("Warning: File", path, "not found")
         return False, "" 
 
+
+def rmcom(target: str, content: str) -> str:
+    com = get_comment(target)
+    lines = content.split("\n")
+    output = [line for line in lines if not line.lstrip().startswith(com)]
+    return "\n".join(output)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('file', type=str, help='file to process')
     parser.add_argument('-u', '--update', action="store_true", help='update source file')
+    parser.add_argument('-r', '--rmcom', action="store_true", help='rm comments')
     parser.add_argument('-o', '--output', type=str, help='output file')
     parser.add_argument("-v", '--version', action="store_true", help='print version')
     args = parser.parse_args()
@@ -138,8 +150,11 @@ def main():
 
     success, content = open_file(args.file)
     if success:
-        content = LegacyFilter(args.file).process(content)
-        # content = Filter(args.file).process(content)
+
+        if args.rmcom:
+            content = rmcom(args.file, content)
+        else:
+            content = Filter(args.file).process(content)
 
         if args.output:
             if os.path.isfile(args.output):
