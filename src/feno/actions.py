@@ -16,7 +16,7 @@ def norm_join(*args):
     return os.path.normpath(os.path.join(*args))
 
 class Actions:
-    def __init__(self, source_dir, remote_config: Optional[str]=None):
+    def __init__(self, source_dir, make_remote: bool, insert_tko_preamble: bool):
         self.cache = norm_join(source_dir, ".cache")
         self.target = norm_join(self.cache, "mapi.json")
         self.source_dir = source_dir
@@ -31,7 +31,8 @@ class Actions:
         self.draft_tree = {}
         self.cache_src = norm_join(self.cache, "lang")
         self.vpl = None
-        self.remote_config: Optional[str] = remote_config
+        self.make_remote: bool = make_remote
+        self.insert_tko_preamble: bool = insert_tko_preamble
 
     def validate(self):
         if not os.path.isdir(self.source_dir):
@@ -64,20 +65,22 @@ class Actions:
         Log.verbose("")
         return False
     
-    def remote_md(self, disable_preamble=False):
+    def remote_md(self):
         cfg = RemoteCfg()
-        if self.remote_config is not None:
-            cfg.read(self.remote_config)
-        else:
+        found = False
+        if self.make_remote:
             cfg_path = RemoteCfg.search_cfg_path(self.source_dir)
             if cfg_path is None:
                 print("\n    fail: no remote.cfg found in the parent folders")
                 print("\n    fail: proceeding without make absolute links")
             else:
+                found = True
                 Log.verbose(f"    remote.cfg: {cfg_path}")
                 cfg.read(cfg_path)
-        RemoteMd.run(cfg, self.source_readme, self.remote_readme, self.hook, disable_preamble)
-        Log.resume("AbsoluteMd ", end="")
+        RemoteMd.run(cfg, self.source_readme, self.remote_readme, self.hook, self.insert_tko_preamble)
+        if self.make_remote and found:
+            Log.resume("AbsoluteMd ", end="")
+        Log.verbose(f"    Remote file: {self.remote_readme}")
     
     # uses pandoc to generate html from markdown
     def html(self):
@@ -123,8 +126,8 @@ class Actions:
         Log.resume("Mapi ", end="")
         Log.verbose(f"    Mapi  file: {self.mapi_json}")
 
-    def clean(self, keep: bool):
-        if not keep:
+    def clean(self, erase: bool):
+        if erase:
             Log.resume("Cleaning ", end="")
             Log.verbose("    Cleaning  : html and cases files")
             os.remove(self.cases)

@@ -32,8 +32,8 @@ class RemoteCfg:
         self.user = config["DEFAULT"]["user"]
         self.repo = config["DEFAULT"]["rep"]
         self.base = config["DEFAULT"]["base"]
-        if "branch" in config["DEFAULT"]:
-            self.branch = config["DEFAULT"]["branch"]
+        self.branch = config["DEFAULT"]["branch"]
+        self.tag = config["DEFAULT"]["tag"]
 
     @staticmethod
     def search_cfg_path(source_dir) -> Optional[str]:
@@ -115,15 +115,15 @@ class RemoteMd:
 
         lines = content.split("\n")
         online_readme_link = os.path.join("https://github.com", cfg.user, cfg.repo, "blob", cfg.branch, base_hook, "Readme.md")
-        tkodown = "tko down " + cfg.user[6:] + " " + hook
+        tkodown = "tko down " + cfg.tag + " " + hook
         lines = RemoteMd.insert_preamble(lines, online_readme_link, tkodown)
         return "\n".join(lines)
 
     @staticmethod
-    def run(remote_cfg: RemoteCfg, source: str, target: str, hook, disable_preamble: bool) -> bool:    
+    def run(remote_cfg: RemoteCfg, source: str, target: str, hook, insert_preamble: bool) -> bool:    
         content = open(source).read()
         if remote_cfg is not None:
-            if not disable_preamble:
+            if insert_preamble:
                 content = RemoteMd.insert_qxcode_preamble(remote_cfg, content, hook)
             content = Absolute.relative_to_absolute(content, remote_cfg, hook)
         open(target, "w").write(content)

@@ -1,6 +1,6 @@
 import subprocess
 from subprocess import PIPE
-
+# import markdown
 from .css_style import CssStyle
 
 class HTML:
@@ -104,27 +104,59 @@ class HTML:
 # </style>
 # """
 
+#     @staticmethod
+#     def fix_markdown_indentation(content):
+#         last: int = -1
+#         dist: int = -1
+#         step: int = 0
+#         inside_fences = False
+#         output = []
+#         for line in content.split("\n"):
+#             line_init = line.lstrip()
+#             line_dist = len(line) - len(line_init)
+#             if not inside_fences and (line_init.startswith("- ") or line_init.startswith("* ")):
+#                 if line_dist == 0: # primeiro
+#                     last = 0
+#                     dist = 0
+#                 elif line_dist > dist:
+#                     if last == 0: # segundo level
+#                         step = line_dist
+#                     last += 1 # proximo level
+#                     dist = line_dist
+#                 elif line_dist < dist:
+#                     last -= int((dist - line_dist) / step)
+#                     dist = line_dist
+#                 line = " " * (4 * last) + line_init
+#             if line.startswith("```"):
+#                 inside_fences = not inside_fences
+#             output.append(line)
+#         return "\n".join(output)
 
+#     @staticmethod
+#     def generate_html_with_python(title: str, input_file: str, output_file: str):
+#         with open(input_file) as f:
+#             content = f.read()
+#         lines = content.split("\n")
+#         output = []
+#         itemize = False
+#         for line in lines:
+#             if line.startswith("  - "):
+#                 output.append("  " + line)
+#             elif line.startswith("    - "):
+#                 output.append("    " + line)
+#             elif line.startswith("      - "):
+#                 output.append("      " + line)
+#             else:
+#                 output.append(line)
+#         content = "\n".join(output)
+#         data = markdown.markdown(content,
+#                                   extensions=['markdown_katex', 'md_in_html', 'fenced_code', 'codehilite', 'extra', 'nl2br', 'sane_lists', 'wikilinks', 'toc'],
+#                                     extension_configs={
+#                                         'markdown_katex': {
+#                                             'no_inline_svg': True,  # fix for WeasyPrint
+#                                             'insert_fonts_css': True,
+#                                         },
+#                                     })
 
-
-
-    # @staticmethod
-    # def generate_html_with_python(title: str, input_file: str, output_file: str):
-    #     with open(input_file) as f:
-    #         content = f.read()
-    #     lines = content.split("\n")
-    #     output = []
-    #     itemize = False
-    #     for line in lines:
-    #         if line.startswith("  - "):
-    #             output.append("  " + line)
-    #         elif line.startswith("    - "):
-    #             output.append("    " + line)
-    #         elif line.startswith("      - "):
-    #             output.append("      " + line)
-    #         else:
-    #             output.append(line)
-    #     content = "\n".join(output)
-    #     data = markdown.markdown(content, extensions=['fenced_code', 'codehilite', 'extra', 'nl2br', 'sane_lists', 'wikilinks', 'toc'])
-    #     with open(output_file, "w") as f:
-    #         f.write(data + HTML.codehilite_css)
+#         with open(output_file, "w") as f:
+#             f.write(data + HTML.codehilite_css)

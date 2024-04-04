@@ -9,16 +9,18 @@ from .log import Log
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('targets', metavar='T', type=str, nargs='*', help='Readmes or folders')
+    parser.add_argument('targets', metavar='T', type=str, nargs='*', help='folders')
     parser.add_argument("--check", "-c", action="store_true", help="Check if the file needs to be rebuilt")
-    parser.add_argument("--preamble", "-p", action="store_true", help="disable qxcode preamble")
-    parser.add_argument("--version", action="store_true", help="Prints the version")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose mode")
-    parser.add_argument("--keep", "-k", action="store_true", help="Keep the cache files")
-    parser.add_argument("--remote", "-r", type=str, help="remote config file")
+    parser.add_argument("--version", "-v", action="store_true", help="Prints the version")
+
+    parser.add_argument("--brief", "-b", action="store_true", help="Brief mode")
+    parser.add_argument("--erase", "-e", action="store_true", help="Erase .html and .tio temp files")
+    parser.add_argument("--remote", "-r", action="store_true", help="Search for remote.cfg file and create absolute links")
+    parser.add_argument("--tko", "-t", action="store_true", help="Insert tko preamble")
     
+
     args = parser.parse_args()
-    Log.set_verbose(args.verbose)
+    Log.set_verbose(not args.brief)
     
     if args.version:
         print(__version__)
@@ -31,9 +33,9 @@ def main():
     for target in args.targets:
         hook = os.path.basename(os.path.abspath(target))
 
-        actions = Actions(target, args.remote)
+        actions = Actions(target, args.remote, args.tko)
         Log.resume(hook, end=": [ ")
-        Log.verbose(hook, end=": ")
+        Log.verbose(hook)
 
         if not actions.validate():
             continue
@@ -44,14 +46,14 @@ def main():
 
         if not args.check or actions.need_rebuild():
             actions.recreate_cache() # erase .cache
-            actions.remote_md(args.preamble)
+            actions.remote_md()
             actions.html()
             actions.build_cases()
             actions.copy_drafts()
             actions.run_local_sh()
             actions.init_vpl()
             actions.create_mapi()
-            actions.clean(args.keep)
+            actions.clean(args.erase)
 
         Log.resume("]")
 
