@@ -35,7 +35,7 @@ def main():
 
         actions = Actions(target, args.remote, args.tko)
         Log.resume(hook, end=": [ ")
-        Log.verbose(hook)
+        Log.verbose(hook, end=" ")
 
         if not actions.validate():
             continue
@@ -46,10 +46,11 @@ def main():
 
         if not args.check or actions.need_rebuild():
             actions.recreate_cache() # erase .cache
+            actions.copy_drafts()
+            actions.update_markdown() # se os drafts tiverem mudado o markdown precisa ser atualizado
             actions.remote_md()
             actions.html()
             actions.build_cases()
-            actions.copy_drafts()
             actions.run_local_sh()
             actions.init_vpl()
             actions.create_mapi()

@@ -1,5 +1,9 @@
 # Changelog
 
+- 0.1.1
+  - apenas adiciona no drafts arquivos gerados
+- 0.1.0
+  - removendo unused tree
 - 0.0.9
   - atualizando filter para remover comentários
   - fix: bug do filter no modo manual

@@ -28,7 +28,6 @@ class Actions:
         self.cases = norm_join(self.cache, "q.tio")
         self.config_json = norm_join(self.source_dir, "config.json")
         self.mapi_json = norm_join(self.cache, "mapi.json")
-        self.draft_tree = {}
         self.cache_src = norm_join(self.cache, "lang")
         self.vpl = None
         self.make_remote: bool = make_remote
@@ -59,7 +58,7 @@ class Actions:
     def need_rebuild(self):
         if Check.need_rebuild(self.source_dir, self.target):
             Log.resume("Changes ", end="")
-            Log.verbose(f"changes in {self.source_dir}")
+            Log.verbose(f"    Changes in {self.source_dir}")
             return True
             
         Log.verbose("")
@@ -80,7 +79,7 @@ class Actions:
         RemoteMd.run(cfg, self.source_readme, self.remote_readme, self.hook, self.insert_tko_preamble)
         if self.make_remote and found:
             Log.resume("AbsoluteMd ", end="")
-        Log.verbose(f"    Remote file: {self.remote_readme}")
+        Log.verbose(f"    RemoteFile: {self.remote_readme}")
     
     # uses pandoc to generate html from markdown
     def html(self):
@@ -100,7 +99,7 @@ class Actions:
         if os.path.isdir(source_src):
             Log.resume("Drafts ", end="")
             Log.verbose(f"    Drafts dir: {source_src}")
-            Tree.deep_filter_copy(source_src, self.cache_src, self.draft_tree, 5)
+            Tree.deep_filter_copy(source_src, self.cache_src, 5)
 
     def run_local_sh(self):
         local_sh = norm_join(self.source_dir, "local.sh")
@@ -117,8 +116,8 @@ class Actions:
         self.vpl.set_cases(self.cases)
         if self.vpl.load_config_json(self.config_json, self.source_dir):
             Log.resume("Required ", end="")
-            Log.verbose(f"    Config mapi file: {self.config_json}")
-        if self.vpl.load_draft_tree(self.draft_tree, self.cache_src):
+            Log.verbose(f"    CfgVplJson: {self.config_json}")
+        if self.vpl.load_drafts(self.cache_src):
             Log.resume("Drafts ", end="")
 
     def create_mapi(self):

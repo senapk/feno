@@ -109,7 +109,7 @@ class Drafts:
     @staticmethod
     def load_drafts(readme_path):
         folder = os.path.dirname(readme_path)
-        origin = os.path.join(folder, "src")
+        origin = os.path.join(folder, ".cache/lang")
         output = ""
         if os.path.isdir(origin):
             # create a markdown list os links with all files under .cache/src

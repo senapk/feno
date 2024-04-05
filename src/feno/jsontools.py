@@ -85,14 +85,16 @@ class JsonVPL:
             return True
         return False
     
-    def load_draft_tree(self, draft_tree: Dict[str, List[str]], cache_draft: str):
-        if len(draft_tree) == 0:
-            return False
-        
-        for ext in draft_tree:
-            for file in draft_tree[ext]:
-                self.add_draft(ext, norm_join(cache_draft, ext, file))
-        return True
+    def load_drafts(self, cache_draft: str):
+        found = False
+        for lang in os.listdir(cache_draft):
+            lang_path = norm_join(cache_draft, lang)
+            if os.path.isdir(lang_path):
+                for file in os.listdir(lang_path):
+                    file_path = norm_join(lang_path, file)
+                    self.add_draft(lang, file_path)
+                    found = True
+        return found
 
     def __str__(self):
         return self.to_json()
