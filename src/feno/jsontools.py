@@ -87,6 +87,8 @@ class JsonVPL:
     
     def load_drafts(self, cache_draft: str):
         found = False
+        if not os.path.isdir(cache_draft):
+            return False
         for lang in os.listdir(cache_draft):
             lang_path = norm_join(cache_draft, lang)
             if os.path.isdir(lang_path):

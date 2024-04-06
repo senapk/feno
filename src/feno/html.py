@@ -6,6 +6,19 @@ from .css_style import CssStyle
 class HTML:
 
     @staticmethod
+    def remove_css_link_from_html(html_file: str):
+        with open(html_file, "r") as f:
+            content = f.read()
+        output = []
+        for line in content.split("\n"):
+            if not line.startswith('  <link rel="stylesheet"'):
+                output.append(line)
+        with open(html_file, "w") as f:
+            f.write("\n".join(output))
+
+
+
+    @staticmethod
     def generate_html_with_pandoc(title: str, input_file: str, output_file: str, enable_latex: bool):
         fulltitle = title.replace('!', '\\!').replace('?', '\\?')
         cmd = ["pandoc", input_file, '--css', CssStyle.get_file(), '--metadata', 'pagetitle=' + fulltitle,
@@ -18,6 +31,8 @@ class HTML:
             if stdout != "" or stderr != "":
                 print(stdout)
                 print(stderr)
+            HTML.remove_css_link_from_html(output_file)
+
         except Exception as e:
             print("Erro no comando pandoc:", e)
             exit(1)
