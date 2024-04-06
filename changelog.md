@@ -1,5 +1,7 @@
 # Changelog
 
+- 0.1.3
+  - removendo link para css que gerava arquivos html diferentes
 - 0.1.1
   - apenas adiciona no drafts arquivos gerados
 - 0.1.0
