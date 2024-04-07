@@ -2,6 +2,7 @@ import enum
 import os
 import argparse
 from typing import Tuple
+import shutil
 
 from .__init__ import __version__
 
@@ -118,7 +119,75 @@ class Filter:
         content = LegacyFilter(self.filename).process(content)
         return self.__process(content)
 
+def clean_com(target: str, content: str) -> str:
+    com = get_comment(target)
+    lines = content.split("\n")
+    output = [line for line in lines if not line.lstrip().startswith(com)]
+    return "\n".join(output)
 
+class DeepFilter:
+    extensions = [".md", ".c", ".cpp", ".h", ".hpp", ".py", ".java", ".js", ".ts", ".hs", ".txt"]
+
+    def __init__(self):
+        self.to_filter = True
+        self.quiet_mode = False
+        self.indent = ""
+    
+    def print(self, *args, **kwargs):
+        if not self.quiet_mode:
+            print(" " * self.indent, end="")
+            print(*args, **kwargs)
+
+    def set_indent(self, prefix: str):
+        self.indent = prefix
+        return self
+
+    def set_quiet(self, value):
+        self.quiet_mode = (value == True)
+        return self
+    
+    def set_clean(self, value):
+        self.to_filter = not (value == True)
+        return self
+
+    def copy(self, source, destiny, deep: int):
+        # print("debug", source, destiny, deep)
+        if deep == 0:
+            return
+        if os.path.isdir(source):
+            chain = source.split(os.sep)
+            if len(chain) > 1 and chain[-1].startswith("."):
+                return
+            if not os.path.isdir(destiny):
+                os.makedirs(destiny)
+            for file in sorted(os.listdir(source)):
+                self.copy(os.path.join(source, file), os.path.join(destiny, file), deep - 1)
+        else:
+            filename = os.path.basename(source)
+
+            if not any([filename.endswith(ext) for ext in self.extensions]):
+                return
+            content = open(source, "r").read()
+
+            if self.to_filter:
+                processed = Filter(filename).process(content)
+            else:
+                processed = clean_com(source, content)
+
+            if processed != "":
+                with open(destiny, "w") as f:
+                    f.write(processed)
+            
+            line = "";
+            if processed != content:
+                if processed == "":
+                    line += "(disabled): "
+                else:
+                    line += "(filtered): "
+            else:
+                line += "(        ): "
+            line += destiny
+            self.print(line)
 
 def open_file(path): 
         if os.path.isfile(path):
@@ -129,30 +198,50 @@ def open_file(path):
         return False, "" 
 
 
-def rmcom(target: str, content: str) -> str:
-    com = get_comment(target)
-    lines = content.split("\n")
-    output = [line for line in lines if not line.lstrip().startswith(com)]
-    return "\n".join(output)
+
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('file', type=str, help='file to process')
+    parser.add_argument('target', type=str, help='file or folder to process')
     parser.add_argument('-u', '--update', action="store_true", help='update source file')
-    parser.add_argument('-r', '--rmcom', action="store_true", help='rm comments')
-    parser.add_argument('-o', '--output', type=str, help='output file')
+    parser.add_argument('-c', '--clean', action="store_true", help='clean comments')
+    parser.add_argument('-o', '--output', type=str, help='output target')
     parser.add_argument("-v", '--version', action="store_true", help='print version')
+    parser.add_argument("-r", "--recursive", action="store_true", help="recursive mode")
+    parser.add_argument("-f", "--force", action="store_true", help="force mode")
+    parser.add_argument("-q", "--quiet", action="store_true", help="quiet mode")
+    parser.add_argument("-i", "--indent", type=int, default=0, help="indent using spaces")
+
     args = parser.parse_args()
 
     if args.version:
         print(__version__)
         exit()
 
+    if args.recursive:
+        if args.output is None:
+            print("Error: output is required in recursive mode")
+            exit()
+        if not os.path.isdir(args.target):
+            print("Error: target must be a folder in recursive mode")
+            exit()
+        if os.path.exists(args.output):
+            if not args.force:
+                print("Error: output folder already exists")
+                exit()
+            else:
+                shutil.rmtree(args.output)
+                os.makedirs(args.output)
+
+        deep_filter = DeepFilter().set_clean(args.clean).set_quiet(args.quiet).set_indent(args.indent)
+        deep_filter.copy(args.target, args.output, 10)
+        exit()
+
     success, content = open_file(args.file)
     if success:
 
-        if args.rmcom:
-            content = rmcom(args.file, content)
+        if args.clean:
+            content = clean_com(args.file, content)
         else:
             content = Filter(args.file).process(content)
 
