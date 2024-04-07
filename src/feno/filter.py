@@ -129,7 +129,7 @@ class DeepFilter:
     extensions = [".md", ".c", ".cpp", ".h", ".hpp", ".py", ".java", ".js", ".ts", ".hs", ".txt"]
 
     def __init__(self):
-        self.to_filter = True
+        self.cheat_mode = False
         self.quiet_mode = False
         self.indent = ""
     
@@ -146,8 +146,8 @@ class DeepFilter:
         self.quiet_mode = (value == True)
         return self
     
-    def set_clean(self, value):
-        self.to_filter = not (value == True)
+    def set_cheat(self, value):
+        self.cheat_mode = (value == True)
         return self
 
     def copy(self, source, destiny, deep: int):
@@ -169,24 +169,33 @@ class DeepFilter:
                 return
             content = open(source, "r").read()
 
-            if self.to_filter:
-                processed = Filter(filename).process(content)
-            else:
-                processed = clean_com(source, content)
+            processed = Filter(filename).process(content)
 
-            if processed != "":
+            if self.cheat_mode:
+                if processed != content:
+                    cleaned = clean_com(source, content)
+                    with open(destiny, "w") as f:
+                        f.write(cleaned)
+            elif processed != "":
                 with open(destiny, "w") as f:
                     f.write(processed)
             
-            line = "";
-            if processed != content:
+
+            line = ""
+            if self.cheat_mode:
+                if processed != content:
+                    line += "(cleaned ): "
+                else:
+                    line += "(disabled): "
+            else:
                 if processed == "":
                     line += "(disabled): "
-                else:
+                elif processed != content:
                     line += "(filtered): "
-            else:
-                line += "(        ): "
+                else:
+                    line += "(        ): "
             line += destiny
+
             self.print(line)
 
 def open_file(path): 
@@ -204,7 +213,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('target', type=str, help='file or folder to process')
     parser.add_argument('-u', '--update', action="store_true", help='update source file')
-    parser.add_argument('-c', '--clean', action="store_true", help='clean comments')
+    parser.add_argument('-c', '--cheat', action="store_true", help='recursive cheat mode cleaning comments on students files')
     parser.add_argument('-o', '--output', type=str, help='output target')
     parser.add_argument("-v", '--version', action="store_true", help='print version')
     parser.add_argument("-r", "--recursive", action="store_true", help="recursive mode")
@@ -217,6 +226,9 @@ def main():
     if args.version:
         print(__version__)
         exit()
+
+    if args.cheat:
+        args.recursive = True
 
     if args.recursive:
         if args.output is None:
@@ -233,14 +245,14 @@ def main():
                 shutil.rmtree(args.output)
                 os.makedirs(args.output)
 
-        deep_filter = DeepFilter().set_clean(args.clean).set_quiet(args.quiet).set_indent(args.indent)
+        deep_filter = DeepFilter().set_cheat(args.cheat).set_quiet(args.quiet).set_indent(args.indent)
         deep_filter.copy(args.target, args.output, 10)
         exit()
 
     success, content = open_file(args.file)
     if success:
 
-        if args.clean:
+        if args.cheat:
             content = clean_com(args.file, content)
         else:
             content = Filter(args.file).process(content)

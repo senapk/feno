@@ -104,12 +104,11 @@ class Toch:
             subst = r"<!-- toch -->\n<!-- toch -->"
         return re.sub(regex, subst, content, 0, re.MULTILINE | re.DOTALL)
 
-class Drafts:
+class Links:
 
     @staticmethod
-    def load_drafts(readme_path):
-        folder = os.path.dirname(readme_path)
-        origin = os.path.join(folder, ".cache/lang")
+    def load_links(readme_dir, filter_dir):
+        origin = os.path.join(readme_dir, filter_dir)
         output = ""
         if os.path.isdir(origin):
             # create a markdown list os links with all files under .cache/src
@@ -117,20 +116,27 @@ class Drafts:
             for lang in entries:
                 output += "- " + lang + "\n"
                 for file in sorted(os.listdir(os.path.join(origin, lang))):
-                    output += "  - [" + file + "](.cache/lang/" + lang + "/" + file + ")\n"
-
+                    output += "  - [" + file + "](" + filter_dir + "/" + lang + "/" + file + ")\n"
         return output
-
 
     @staticmethod
     def execute(path, content: str, action: Action = Action.RUN) -> str:
-        regex = r"<!-- draft -->\n(.*?)<!-- draft -->"
-        if action == Action.RUN:
-            new_draft = Drafts.load_drafts(path)
-            subst = r"<!-- draft -->\n" + new_draft + r"\n<!-- draft -->"
-        else:
-            subst = r"<!-- draft -->\n<!-- draft -->"
-        return re.sub(regex, subst, content, 0, re.MULTILINE | re.DOTALL)
+        regex = r"<!-- links (\S*?) -->\n(.*?)<!-- links -->"
+        matches = re.finditer(regex, content, re.MULTILINE | re.DOTALL)
+        
+        # replace content of group 2 with load_links of group 1 for each match
+        for match in matches:
+            filter_dir = match.group(1)
+            lregex = r"<!-- links " + filter_dir + r" -->\n(.*?)<!-- links -->"
+            if action == Action.RUN:
+                readme_dir = os.path.normpath(os.path.dirname(path))
+                new_links = Links.load_links(readme_dir, filter_dir)
+                subst = r"<!-- links " + filter_dir + r" -->\n" + new_links + r"<!-- links -->"
+            else:
+                subst = r"<!-- links " + filter_dir + r" -->\n<!-- links -->"
+            content = re.sub(lregex, subst, content, 0, re.MULTILINE | re.DOTALL)
+
+        return content
 
 class Load:
 
@@ -286,7 +292,7 @@ class Mdpp:
         if updated != updated_toc:
             updated = updated_toc
         updated = Load.execute(updated, target_dir, action)
-        updated = Drafts.execute(target, updated, action)
+        updated = Links.execute(target, updated, action)
         Save.execute(updated)
         
         if updated != original:

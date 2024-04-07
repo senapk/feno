@@ -54,11 +54,11 @@ def main():
         if not args.check or actions.need_rebuild():
             actions.recreate_cache() # erase .cache
             actions.copy_drafts()
+            actions.run_local_sh()
             actions.update_markdown() # se os drafts tiverem mudado o markdown precisa ser atualizado
             actions.remote_md()
             actions.html()
             actions.build_cases()
-            actions.run_local_sh()
             actions.init_vpl()
             actions.create_mapi()
             actions.clean(args.erase)

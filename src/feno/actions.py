@@ -106,11 +106,11 @@ class Actions:
         local_sh = norm_join(self.source_dir, "local.sh")
         actual_chdir = os.getcwd()
         if os.path.isfile(local_sh):
+            Log.verbose(f"  Execute local.sh")
             os.chdir(self.source_dir)
             subprocess.run("bash local.sh", shell=True)
             os.chdir(actual_chdir)
             Log.resume("Local.sh ", end="")
-            Log.verbose(f"  local.sh executed")
 
     def init_vpl(self):
         self.vpl = JsonVPL(self.title, open(self.target_html).read())
