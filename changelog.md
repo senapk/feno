@@ -1,5 +1,9 @@
 # Changelog
 
+- 0.2.0
+  - add: improved indexed checking for unused hooks
+- 0.1.9
+  - add: mddp filter links procuram em modo recursivo
 - 0.1.8
   - add: retornando erro no shell de indexer caso hava mismatch label hook
 - 0.1.7

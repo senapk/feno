@@ -108,16 +108,21 @@ class Links:
 
     @staticmethod
     def load_links(readme_dir, filter_dir):
+        def traverse_directory(directory, depth=0):
+            output = ""
+            if os.path.isdir(directory):
+                entries = sorted(os.listdir(directory))
+                for entry in entries:
+                    full_path = os.path.join(directory, entry)
+                    if os.path.isdir(full_path):
+                        output += "  " * depth + "- " + entry + "\n"
+                        output += traverse_directory(full_path, depth + 1)
+                    else:
+                        output += "  " * depth + "- [" + entry + "](" + os.path.relpath(full_path, readme_dir) + ")\n"
+            return output
+        
         origin = os.path.join(readme_dir, filter_dir)
-        output = ""
-        if os.path.isdir(origin):
-            # create a markdown list os links with all files under .cache/src
-            entries = sorted(os.listdir(origin))
-            for lang in entries:
-                output += "- " + lang + "\n"
-                for file in sorted(os.listdir(os.path.join(origin, lang))):
-                    output += "  - [" + file + "](" + filter_dir + "/" + lang + "/" + file + ")\n"
-        return output
+        return traverse_directory(origin)
 
     @staticmethod
     def execute(path, content: str, action: Action = Action.RUN) -> str:
