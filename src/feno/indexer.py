@@ -98,8 +98,8 @@ def found_labels_mismatch(path, base) -> bool:
                 not_ok.append("    ({} != {}): {}".format(label, hook, os.path.join(base, hook, 'Readme.md')))
                 error_found = True
 
-        print("  verified:", count_ok)
-        print("  mismatch:", len(not_ok))
+        print("- verified:", count_ok)
+        print("- mismatch:", len(not_ok))
         for line in not_ok:
             print(line)
         return error_found

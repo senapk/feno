@@ -2,6 +2,9 @@
 
 - 0.2.0
   - add: improved indexed checking for unused hooks
+  - fix: remove extra newline in feno
+  - add: ignore node_modules and .json files as feno targets
+  - add: indexed needs now base folder as parameter
 - 0.1.9
   - add: mddp filter links procuram em modo recursivo
 - 0.1.8

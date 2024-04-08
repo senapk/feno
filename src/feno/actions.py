@@ -34,6 +34,8 @@ class Actions:
         self.insert_tko_preamble: bool = insert_tko_preamble
 
     def validate(self):
+        if self.hook == "node_modules" or self.hook.endswith(".json"):
+            return False
         if not os.path.isdir(self.source_dir):
             print(f"\n    fail: {self.source_dir} is not a directory")
             return False
@@ -60,8 +62,6 @@ class Actions:
             Log.resume("Changes ", end="")
             Log.verbose(f"  Changes in {self.source_dir}")
             return True
-            
-        Log.verbose("")
         return False
     
     def remote_md(self):
