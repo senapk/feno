@@ -28,7 +28,7 @@ class Actions:
         self.cases = norm_join(self.cache, "q.tio")
         self.config_json = norm_join(self.source_dir, "config.json")
         self.mapi_json = norm_join(self.cache, "mapi.json")
-        self.cache_src = norm_join(self.cache, "lang")
+        self.cache_src = norm_join(self.cache, "draft")
         self.vpl = None
         self.make_remote: bool = make_remote
         self.insert_tko_preamble: bool = insert_tko_preamble

@@ -43,7 +43,7 @@ def update_titles(path):
     with open(path, 'w') as file:
         file.write('\n'.join(output))
 
-def check_labels(path):
+def check_labels_ok(path) -> bool:
     with open(path, 'r') as file:
         data = file.read()
         lines = data.split('\n')
@@ -60,16 +60,17 @@ def check_labels(path):
                     print("error in", line)
                     continue
                 hook = line.split('base/')[1].split('/')[0] 
-                output = ("=" if label == hook else "!") + " " + label + " " + hook
+                output = "    " + label + ("==" if label == hook else " != ") + hook
                 if label == hook:
                     ok.append(output)
                 else:
                     not_ok.append(output)
 
-        print("   matched:", len(ok))
-        print("mismatched:", len(not_ok))
+        print("verified:", len(ok))
+        print("mismatch:", len(not_ok))
         for line in not_ok:
             print(line)
+        return len(not_ok) == 0
 
 def main(): 
     parser = argparse.ArgumentParser(description='Indexer')
@@ -78,7 +79,8 @@ def main():
     args = parser.parse_args()
 
     update_titles(args.path)
-    check_labels(args.path)
+    if not check_labels_ok(args.path):
+        exit(1)
 
 if __name__ == '__main__':
     main()    

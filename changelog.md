@@ -1,5 +1,9 @@
 # Changelog
 
+- 0.1.8
+  - add: retornando erro no shell de indexer caso hava mismatch label hook
+- 0.1.7
+  - add: mudando pasta default de rascunhos de lang para draft
 - 0.1.6
   - fix: erro no filter de arquivo
 - 0.1.5
