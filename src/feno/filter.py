@@ -249,13 +249,14 @@ def main():
         deep_filter.copy(args.target, args.output, 10)
         exit()
 
-    success, content = open_file(args.file)
+    file = args.target
+    success, content = open_file(file)
     if success:
 
         if args.cheat:
-            content = clean_com(args.file, content)
+            content = clean_com(file, content)
         else:
-            content = Filter(args.file).process(content)
+            content = Filter(file).process(content)
 
         if args.output:
             if os.path.isfile(args.output):
@@ -265,7 +266,7 @@ def main():
             else:                
                 open(args.output, "w").write(content)
         elif args.update:
-            with open(args.file, "w") as f:
+            with open(file, "w") as f:
                 f.write(content)
         else:
             print(content)

@@ -1,5 +1,9 @@
 # Changelog
 
+- 0.1.6
+  - fix: erro no filter de arquivo
+- 0.1.5
+  - fix: erro no mdpp links
 - 0.1.4
   - adicionado modo recursivo no filter
   - adicionando opcoes de clean, quiet no filter
