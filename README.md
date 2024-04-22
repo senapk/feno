@@ -11,6 +11,8 @@ A ferramenta `feno` é um formatador de atividades de programação e conta com 
 
 ## Instalação
 
+Se estiver no windows, instale o [WSL](https://docs.microsoft.com/pt-br/windows/wsl/install) e utilize o Ubuntu.
+
 ```bash
 pip install feno
 

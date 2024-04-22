@@ -26,7 +26,8 @@ class Mode(enum.Enum):
     DEL = 3 # apagar tudo
 
 class LegacyFilter:
-    def __init__(self, filename):
+    def __init__(self, filename: str):
+        super().__init__()
         self.mode = Mode.RAW
         self.level = 1
         self.com = "//"
@@ -242,8 +243,13 @@ def main():
                 print("Error: output folder already exists")
                 exit()
             else:
-                shutil.rmtree(args.output)
-                os.makedirs(args.output)
+                # recursive delete all folder content without deleting the folder itself
+                for file in os.listdir(args.output):
+                    path = os.path.join(args.output, file)
+                    if os.path.isdir(path):
+                        shutil.rmtree(path)
+                    else:
+                        os.remove(path)
 
         deep_filter = DeepFilter().set_cheat(args.cheat).set_quiet(args.quiet).set_indent(args.indent)
         deep_filter.copy(args.target, args.output, 10)

@@ -1,5 +1,7 @@
 # Changelog
 
+- 0.2.1
+  - add: clear folder without removing it, changing inodes
 - 0.2.0
   - add: improved indexed checking for unused hooks
   - fix: remove extra newline in feno
