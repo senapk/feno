@@ -1,5 +1,8 @@
 # Changelog
 
+- 0.2.2
+  - add: python markdown instead pandoc as option
+  - fix: remote error if null content
 - 0.2.1
   - add: clear folder without removing it, changing inodes
 - 0.2.0

@@ -16,7 +16,7 @@ def norm_join(*args):
     return os.path.normpath(os.path.join(*args))
 
 class Actions:
-    def __init__(self, source_dir, make_remote: bool, insert_tko_preamble: bool):
+    def __init__(self, source_dir, make_remote: bool, insert_tko_preamble: bool, use_pandoc: bool):
         self.cache = norm_join(source_dir, ".cache")
         self.target = norm_join(self.cache, "mapi.json")
         self.source_dir = source_dir
@@ -32,6 +32,7 @@ class Actions:
         self.vpl = None
         self.make_remote: bool = make_remote
         self.insert_tko_preamble: bool = insert_tko_preamble
+        self.use_pandoc: bool = use_pandoc
 
     def validate(self):
         if self.hook == "node_modules" or self.hook.endswith(".json"):
@@ -84,7 +85,10 @@ class Actions:
     # uses pandoc to generate html from markdown
     def html(self):
         title = Title.extract_title(self.source_readme)
-        HTML.generate_html_with_pandoc(title, self.remote_readme, self.target_html, True)
+        if self.use_pandoc:
+            HTML.generate_html_with_pandoc(title, self.remote_readme, self.target_html)
+        else:
+            HTML.generate_html_with_python(title, self.remote_readme, self.target_html)
         Log.resume("HTML ", end="")
         Log.verbose(f"  HTML  file: {self.target_html}")
 
