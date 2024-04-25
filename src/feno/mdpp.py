@@ -118,7 +118,8 @@ class Links:
                         output += "  " * depth + "- " + entry + "\n"
                         output += traverse_directory(full_path, depth + 1)
                     else:
-                        output += "  " * depth + "- [" + entry + "](" + os.path.relpath(full_path, readme_dir) + ")\n"
+                        path = os.path.relpath(full_path, readme_dir).replace("\\", "/")
+                        output += "  " * depth + "- [" + entry + "](" + path + ")\n"
             return output
         
         origin = os.path.join(readme_dir, filter_dir)
