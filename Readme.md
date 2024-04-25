@@ -16,6 +16,10 @@ Se estiver no windows, instale o [WSL](https://docs.microsoft.com/pt-br/windows/
 ```bash
 pip install feno
 
+# ou diretamente do github
+
+pip install git+https://github.com/senapk/feno.git
+
 # tko para gerar e converter os testes e testar os códigos
 pip install tko
 
