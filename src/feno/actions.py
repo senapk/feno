@@ -16,7 +16,7 @@ def norm_join(*args):
     return os.path.normpath(os.path.join(*args))
 
 class Actions:
-    def __init__(self, source_dir, make_remote: bool, insert_tko_preamble: bool, use_pandoc: bool):
+    def __init__(self, source_dir):
         self.cache = norm_join(source_dir, ".cache")
         self.target = norm_join(self.cache, "mapi.json")
         self.source_dir = source_dir
@@ -30,9 +30,17 @@ class Actions:
         self.mapi_json = norm_join(self.cache, "mapi.json")
         self.cache_src = norm_join(self.cache, "draft")
         self.vpl = None
-        self.make_remote: bool = make_remote
-        self.insert_tko_preamble: bool = insert_tko_preamble
-        self.use_pandoc: bool = use_pandoc
+        self.make_remote: bool = False
+        self.insert_tko_preamble: bool = False
+        self.use_pandoc: bool = False
+
+    def set_remote(self, make_remote: bool):
+        self.make_remote = make_remote
+        return self
+
+    def set_insert_tko_preamble(self, insert_tko_preamble: bool):
+        self.insert_tko_preamble = insert_tko_preamble
+        return self
 
     def validate(self):
         if self.hook == "node_modules" or self.hook.endswith(".json"):
@@ -66,11 +74,13 @@ class Actions:
         return False
     
     def remote_md(self):
-        cfg = RemoteCfg()
+        cfg = None
         found = False
         if self.make_remote:
+            cfg = RemoteCfg()
             cfg_path = RemoteCfg.search_cfg_path(self.source_dir)
             if cfg_path is None:
+                cfg = None
                 print("\n    fail: no remote.cfg found in the parent folders")
                 print("\n    fail: proceeding without make absolute links")
             else:
@@ -85,10 +95,7 @@ class Actions:
     # uses pandoc to generate html from markdown
     def html(self):
         title = Title.extract_title(self.source_readme)
-        if self.use_pandoc:
-            HTML.generate_html_with_pandoc(title, self.remote_readme, self.target_html)
-        else:
-            HTML.generate_html_with_python(title, self.remote_readme, self.target_html)
+        HTML.generate_html_with_pandoc(title, self.remote_readme, self.target_html)
         Log.resume("HTML ", end="")
         Log.verbose(f"  HTML  file: {self.target_html}")
 

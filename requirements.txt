@@ -4,8 +4,6 @@
 
 # Example requirements
 #mechanicalsoup
-markdown
-pigments
 # PyPI package deployment
 build
 twine

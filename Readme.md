@@ -23,7 +23,7 @@ pip install git+https://github.com/senapk/feno.git
 # tko para gerar e converter os testes e testar os códigos
 pip install tko
 
-# pandoc para gerar os htmls
+# pandoc para gerar os htmls se quiser htmls de qualidade e com suporte a latex
 sudo apt install pandoc
 ```
 
