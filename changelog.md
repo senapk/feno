@@ -1,5 +1,9 @@
 # Changelog
 
+- 0.2.4
+  - fix: mdpp toc
+- 0.2.3
+  - fix: mdpp hiperlink
 - 0.2.2
   - add: python markdown instead pandoc as option
   - fix: remote error if null content

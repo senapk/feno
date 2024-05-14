@@ -23,9 +23,14 @@ class TocMaker:
     # generate md link for the text
     @staticmethod
     def __get_md_link(title: Optional[str]) -> str:
+
+        # remove html comments
+        if "<!--" in title and "-->" in title:
+            title = title.split("<!--")[0] + title.split("-->")[1]
+
         if title is None:
             return ""
-        title = title.lstrip(" #").rstrip()
+        title = title.lstrip(" #")
         title = title.lower()
         out = ''
         for c in title:
@@ -43,6 +48,8 @@ class TocMaker:
 
     @staticmethod
     def __get_content(line: str) -> str:
+        if "<!--" in line and "-->" in line:
+            line = line.split("<!--")[0] + line.split("-->")[1]
         return " ".join(line.split(" ")[1:])
 
     @staticmethod
