@@ -3,7 +3,6 @@ import re
 import configparser
 
 from typing import List, Optional
-from .log import Log
 
 class Title:
     @staticmethod

@@ -49,7 +49,7 @@ def loading_titles_from_files(path):
     output = []
 
     for line in lines:
-        match = re.search(r'\[(.*?)\]\((.*?)\)', line)
+        match = re.search(r'\[([^\[]*?)\]\((.*?)\)', line)
         data = line
         if match:
             link = match.group(2)
@@ -130,7 +130,7 @@ def found_unused_hooks(path, base_dir) -> bool:
     return False
 
 
-def main(): 
+def main():
     parser = argparse.ArgumentParser(description='Indexer')
     parser.add_argument('path', type=str, help='Path to Markdown file')
     parser.add_argument("base", type=str, help="Folder with the problems")
@@ -144,5 +144,5 @@ def main():
         exit(1)
 
 if __name__ == '__main__':
-    main()    
+    main()
     exit(0)

@@ -7,9 +7,16 @@ import argparse
 import enum
 from typing import Optional, List, Tuple
 from .filter import Filter
-import subprocess
-
 from .__init__ import __version__
+
+
+def fread(path):
+    with open(path, "r", encoding='utf-8') as f:
+        return f.read()
+
+def fwrite(path, content):
+    with open(path, "w", encoding='utf-8') as f:
+        f.write(content)
 
 class Action(enum.Enum):
     RUN = 1
@@ -23,7 +30,8 @@ class TocMaker:
     # generate md link for the text
     @staticmethod
     def __get_md_link(title: Optional[str]) -> str:
-
+        if title is None:
+            return ""
         # remove html comments
         if "<!--" in title and "-->" in title:
             title = title.split("<!--")[0] + title.split("-->")[1]
@@ -38,6 +46,8 @@ class TocMaker:
                 out += '-'
             elif c == '_':
                 out += '_'
+            elif c == '\\':
+                pass
             elif c.isalnum():
                 out += c
         return out
@@ -50,14 +60,14 @@ class TocMaker:
     def __get_content(line: str) -> str:
         if "<!--" in line and "-->" in line:
             line = line.split("<!--")[0] + line.split("-->")[1]
-        return " ".join(line.split(" ")[1:])
+        return " ".join(line.split(" ")[1:]).replace("\\", "\\\\")
 
     @staticmethod
     def __remove_code_fences(content: str) -> str:
         regex = r"^```.*?```\n"
         return re.sub(regex, "", content, 0, re.MULTILINE | re.DOTALL)
 
-    # return List[level, "[text](link)"]
+
     @staticmethod
     def __extract_entries(content: str) -> List[Tuple[int, str]]:
         content = TocMaker.__remove_code_fences(content)
@@ -229,19 +239,19 @@ class Load:
                         if data[-1] != "\n":
                             new_content += "\n"
                     elif len(rmcom) > 0:
-                        data =  Load.rmcom(abspath, open(abspath).read()) + "\n"
+                        data =  Load.rmcom(abspath, fread(abspath)) + "\n"
                         new_content += data
                         if data[-1] != "\n":
                             new_content += "\n"
                     elif len(extract) > 0:
                         tag = extract[0].split("=")[1]
-                        data = Load.extract_between_tags(open(abspath).read(), tag)
+                        data = Load.extract_between_tags(fread(abspath), tag)
                         new_content += data
                         if len(data) == 0 or data[-1] != "\n":
                             new_content += "\n"
                     else:
-                        data = open(abspath).read()
-                        new_content += open(abspath).read()
+                        data = fread(abspath)
+                        new_content += data
                         if data[-1] != "\n":
                             new_content += "\n"
                 else:
@@ -268,7 +278,7 @@ class Save:
             content = match.group(2)
             exists = os.path.isfile(path)
             if exists:
-                content_old = open(path).read()
+                content_old = fread(path)
             if not exists or content != content_old:
                 with open(path, "w") as f:
                     print("file", path, "updated")
@@ -285,9 +295,8 @@ class Main:
     @staticmethod
     def open_file(path): 
         if os.path.isfile(path):
-            with open(path) as f:
-                file_content = f.read()
-                return True, file_content
+            file_content = fread(path)
+            return True, file_content
         print("Warning: File", path, "not found")
         return False, "" 
 
@@ -309,10 +318,9 @@ class Mdpp:
         Save.execute(updated)
         
         if updated != original:
-            with open(path, "w") as f:
-                f.write(updated)
-                hook = os.path.abspath(path).split(os.sep)[-2]
-                return True
+            fwrite(path, updated)
+            hook = os.path.abspath(path).split(os.sep)[-2]
+            return True
 
         return False
 
@@ -336,7 +344,6 @@ def main():
 
     for target in args.targets:
         Mdpp.update_file(target, action, args.quiet)
-        
 
 if __name__ == '__main__':
     main()
