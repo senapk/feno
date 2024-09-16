@@ -10,7 +10,8 @@ from .__init__ import __version__
 # == RAW
 # ++ CUT
 # -- DEL
-# $$ COM
+# $$ RM_COM
+# && ADD_COM
 
 class Mark:
     def __init__(self, marker, indent):
@@ -24,6 +25,7 @@ class Mode(enum.Enum):
     ADD = 1 # inserir cortando por degrau
     RAW = 2 # inserir tudo
     DEL = 3 # apagar tudo
+
 
 class LegacyFilter:
     def __init__(self, filename: str):
@@ -82,7 +84,7 @@ class Filter:
         return left_spaces < self.get_indent()
 
     def parse_mode(self, line):
-        marker_list = ["$$", "++", "==", "--"]
+        marker_list = ["$$", "++", "==", "--", "&&"]
         with_left = line.rstrip()
         word = with_left.lstrip()
         for marker in marker_list:
@@ -111,6 +113,9 @@ class Filter:
                 output.append(line)
             elif self.get_marker() == "$$":
                 line = line.replace(" " * self.get_indent() + self.com + " ", " " * self.get_indent(), 1)
+                output.append(line)
+            elif self.get_marker() == "&&":
+                line = " " * self.get_indent() + self.com + " " + line[self.get_indent():]
                 output.append(line)
             elif self.get_marker() == "++" and not line.startswith((1 + self.get_indent()) * " "):
                 output.append(line)

@@ -52,7 +52,16 @@ setup(
                     'test': ['coverage'],
                     },  # Optional
 
-    entry_points={'console_scripts': ['feno=feno.__main__:main', 'lock=feno.lock:lock', 'unlock=feno.lock:unlock', 'mdpp=feno.mdpp:main', 'filter=feno.filter:main', 'indexer=feno.indexer:main', 'check=feno.check:main'], },
+    entry_points={'console_scripts': [
+                        'feno=feno.__main__:main', 
+                        'feno_lock=feno.lock:lock', 
+                        'feno_unlock=feno.lock:unlock', 
+                        'mdpp=feno.mdpp:main', 
+                        'md2html=feno.html:main',
+                        'filter_code=feno.filter:main', 
+                        'indexer=feno.indexer:main', 
+                        'older=feno.older:main'
+                        ], },
 
     project_urls={'Bug Reports': 'https://github.com/senapk/feno/issues',
                   'Source': 'https://github.com/senapk/feno/',

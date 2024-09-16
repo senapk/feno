@@ -1,5 +1,5 @@
 from .jsontools import JsonVPL
-from .check import Check
+from .older import Older
 from .remote_md import RemoteMd, Title, RemoteCfg
 from .html import HTML
 from .cases import Cases
@@ -67,11 +67,15 @@ class Actions:
         return self
     
     def need_rebuild(self):
-        if Check.need_rebuild(self.source_dir, self.target):
-            Log.resume("Changes ", end="")
-            Log.verbose(f"  Changes in {self.source_dir}")
+        if not os.path.exists(self.target):
             return True
-        return False
+        older = Older.find_older([self.source_dir, self.target])
+        if older == self.target:
+            return False
+
+        Log.resume("Changes ", end="")
+        Log.verbose(f"  Changes in {self.source_dir}")
+        return True
     
     def remote_md(self):
         cfg = None

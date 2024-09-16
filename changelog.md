@@ -1,5 +1,10 @@
 # Changelog
 
+- 0.3.0
+  - add: filter mode && to add comments
+- 0.2.5
+  - add: making md2html global
+  - add: changing ckeck to older to return older file in folder
 - 0.2.4
   - fix: mdpp toc
 - 0.2.3
