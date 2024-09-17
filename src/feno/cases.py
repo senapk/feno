@@ -11,5 +11,4 @@ class Cases:
         files = [f for f in files if os.path.isfile(f)]
         files = [f for f in files if f.endswith(".tio") or f.endswith(".vpl")]
         cmd = " ".join(["tko", "build", cases_file, source_readme] + files)
-        output = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
-
+        subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)

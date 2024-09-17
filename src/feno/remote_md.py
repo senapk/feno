@@ -98,39 +98,39 @@ class Absolute:
 
 class RemoteMd:
 
-    @staticmethod
-    def insert_preamble(lines: List[str], online: str, tkodown: str) -> List[str]:
+    # @staticmethod
+    # def insert_preamble(lines: List[str], online: str, tkodown: str) -> List[str]:
 
-        text = "\n- Veja a versão online: [aqui.](" + online + ")\n"
-        text += "- Para programar na sua máquina (local/virtual) use:\n"
-        text += "  - `" + tkodown + "`\n"
-        text += "- Se não tem o `tko`, instale pelo [LINK](https://github.com/senapk/tko#tko).\n\n---"
+    #     text = "\n- Veja a versão online: [aqui.](" + online + ")\n"
+    #     text += "- Para programar na sua máquina (local/virtual) use:\n"
+    #     text += "  - `" + tkodown + "`\n"
+    #     text += "- Se não tem o `tko`, instale pelo [LINK](https://github.com/senapk/tko#tko).\n\n---"
+    #     lines.insert(1, text)
+    #     return lines
 
-        lines.insert(1, text)
+    # @staticmethod
+    # def insert_qxcode_preamble(cfg: RemoteCfg, content: str, hook) -> str:
+    #     base_hook = os.path.join(cfg.base, hook)
 
-        return lines
-
-    @staticmethod
-    def insert_qxcode_preamble(cfg: RemoteCfg, content: str, hook) -> str:
-        base_hook = os.path.join(cfg.base, hook)
-
-        lines = content.split("\n")
-        online_readme_link = os.path.join("https://github.com", cfg.user, cfg.repo, "blob", cfg.branch, base_hook, "Readme.md")
-        tkodown = "tko down " + cfg.tag + " " + hook
-        lines = RemoteMd.insert_preamble(lines, online_readme_link, tkodown)
-        return "\n".join(lines)
+    #     lines = content.split("\n")
+    #     # online_readme_link = os.path.join("https://github.com", cfg.user, cfg.repo, "blob", cfg.branch, base_hook, "Readme.md")
+    #     # tkodown = "tko down " + cfg.tag + " " + hook
+    #     # lines = RemoteMd.insert_preamble(lines, online_readme_link, tkodown)
+    #     return "\n".join(lines)
 
     @staticmethod
-    def run(remote_cfg: RemoteCfg, source: str, target: str, hook, insert_preamble: bool) -> bool:    
+    def run(remote_cfg: RemoteCfg, source: str, target: str, hook: str) -> None:
         content = open(source).read()
         if remote_cfg is not None:
-            if insert_preamble:
-                content = RemoteMd.insert_qxcode_preamble(remote_cfg, content, hook)
             content = Absolute.relative_to_absolute(content, remote_cfg, hook)
         open(target, "w").write(content)
 
 if __name__ == "__main__":
     remote_cfg = RemoteCfg()
-    remote_cfg.read(RemoteCfg.get_default_cfg_path())
-    hook = os.path.basename(os.path.abspath("."))
-    RemoteMd.run(remote_cfg, "Readme.md", ".cache/Readme.md")
+    cfg_path = RemoteCfg.search_cfg_path(".")
+    if cfg_path is not None:
+        remote_cfg.read(cfg_path)
+        hook = os.path.basename(os.path.abspath("."))
+        RemoteMd.run(remote_cfg, "Readme.md", ".cache/Readme.md", hook)
+    else:
+        print("remote.cfg not found")

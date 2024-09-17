@@ -14,11 +14,10 @@ def main():
     parser.add_argument("--version", "-v", action="store_true", help="Prints the version")
     parser.add_argument("--brief", "-b", action="store_true", help="Brief mode")
     # add parameters to receive all target that should be ignored
-    parser.add_argument("--tko", "-t", action="store_true", help="Insert tko preamble")
     parser.add_argument("--remote", "-r", action="store_true", help="Search for remote.cfg file and create absolute links")
     parser.add_argument("--erase", "-e", action="store_true", help="Erase .html and .tio temp files")
 
-    parser.add_argument("--full", "-f", action="store_true", help="Full mode - equivalent to -tre")
+    parser.add_argument("--full", "-f", action="store_true", help="Full mode - equivalent to -re")
     
 
     args = parser.parse_args()
@@ -40,8 +39,7 @@ def main():
         hook = os.path.basename(os.path.abspath(target))
 
         actions = Actions(target)\
-                    .set_remote(args.remote)\
-                    .set_insert_tko_preamble(args.tko)
+                    .set_remote(args.remote)
 
         if not actions.validate():
             continue

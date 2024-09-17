@@ -31,15 +31,10 @@ class Actions:
         self.cache_src = norm_join(self.cache, "draft")
         self.vpl = None
         self.make_remote: bool = False
-        self.insert_tko_preamble: bool = False
         self.use_pandoc: bool = False
 
     def set_remote(self, make_remote: bool):
         self.make_remote = make_remote
-        return self
-
-    def set_insert_tko_preamble(self, insert_tko_preamble: bool):
-        self.insert_tko_preamble = insert_tko_preamble
         return self
 
     def validate(self):
@@ -91,7 +86,7 @@ class Actions:
                 found = True
                 Log.verbose(f"  remote.cfg: {cfg_path}")
                 cfg.read(cfg_path)
-        RemoteMd.run(cfg, self.source_readme, self.remote_readme, self.hook, self.insert_tko_preamble)
+        RemoteMd.run(cfg, self.source_readme, self.remote_readme, self.hook)
         if self.make_remote and found:
             Log.resume("AbsoluteMd ", end="")
         Log.verbose(f"  RemoteFile: {self.remote_readme}")
