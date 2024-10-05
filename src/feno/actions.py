@@ -127,6 +127,7 @@ class Actions:
             Log.verbose("  Cleaning  : html and cases files")
             os.remove(self.cases)
             os.remove(self.target_html)
+            os.remove(self.remote_readme)
 
     # run mdpp script on source readme
     def update_markdown(self):
