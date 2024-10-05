@@ -60,7 +60,8 @@ setup(
                         'md2html=feno.html:main',
                         'filter_code=feno.filter:main', 
                         'indexer=feno.indexer:main', 
-                        'older=feno.older:main'
+                        'older=feno.older:main',
+                        'remote_md=feno.remote_md:main',
                         ], },
 
     project_urls={'Bug Reports': 'https://github.com/senapk/feno/issues',

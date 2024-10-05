@@ -1,5 +1,7 @@
 # Changelog
 
+- 0.3.2
+  - refactor: remote_md
 - 0.3.1
   - add: removed tko down header
 - 0.3.0

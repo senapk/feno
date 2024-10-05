@@ -1,6 +1,6 @@
 from .jsontools import JsonVPL
 from .older import Older
-from .remote_md import RemoteMd, Title, RemoteCfg
+from .remote_md import Title, Absolute
 from .html import HTML
 from .cases import Cases
 from .log import Log
@@ -73,22 +73,7 @@ class Actions:
         return True
     
     def remote_md(self):
-        cfg = None
-        found = False
-        if self.make_remote:
-            cfg = RemoteCfg()
-            cfg_path = RemoteCfg.search_cfg_path(self.source_dir)
-            if cfg_path is None:
-                cfg = None
-                print("\n    fail: no remote.cfg found in the parent folders")
-                print("\n    fail: proceeding without make absolute links")
-            else:
-                found = True
-                Log.verbose(f"  remote.cfg: {cfg_path}")
-                cfg.read(cfg_path)
-        RemoteMd.run(cfg, self.source_readme, self.remote_readme, self.hook)
-        if self.make_remote and found:
-            Log.resume("AbsoluteMd ", end="")
+        Absolute.convert_or_copy_or_print(self.source_readme, self.remote_readme)
         Log.verbose(f"  RemoteFile: {self.remote_readme}")
     
     # uses pandoc to generate html from markdown
