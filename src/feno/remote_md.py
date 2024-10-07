@@ -55,6 +55,7 @@ class RemoteLink:
                 raise ValueError("Invalid URL")
             self.branch = elements[3]
             self.folder = "/".join(elements[4:])
+        return self
 
 class RemoteCfg:
     def __init__(self, target: str):

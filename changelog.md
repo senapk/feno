@@ -1,5 +1,7 @@
 # Changelog
 
+- 0.3.4
+  - fix: remote_md bug
 - 0.3.3
   - fix: remove remote_readme from .cached
 - 0.3.2
