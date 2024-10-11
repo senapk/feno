@@ -1,5 +1,11 @@
 # Changelog
 
+- 0.3.8
+  - fix: mdpp toc links
+- 0.3.7
+  - add: integrated code_filter in filter_code command
+- 0.3.6
+  - add: code_filter tool
 - 0.3.4
   - fix: remote_md bug
 - 0.3.3

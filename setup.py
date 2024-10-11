@@ -59,6 +59,7 @@ setup(
                         'mdpp=feno.mdpp:main', 
                         'md2html=feno.html:main',
                         'filter_code=feno.filter:main', 
+                        'code_filter=feno.code_filter:cfmain',
                         'indexer=feno.indexer:main', 
                         'older=feno.older:main',
                         'remote_md=feno.remote_md:main',

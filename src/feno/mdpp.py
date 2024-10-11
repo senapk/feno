@@ -34,7 +34,10 @@ class TocMaker:
             return ""
         # remove html comments
         if "<!--" in title and "-->" in title:
-            title = title.split("<!--")[0] + title.split("-->")[1]
+            title = title.split("<!--")[0]
+
+        if "[](" in title:
+            title = title.split("[](")[0]
 
         if title is None:
             return ""
@@ -59,7 +62,7 @@ class TocMaker:
     @staticmethod
     def __get_content(line: str) -> str:
         if "<!--" in line and "-->" in line:
-            line = line.split("<!--")[0] + line.split("-->")[1]
+            line = line.split("<!--")[0]
         return " ".join(line.split(" ")[1:]).replace("\\", "\\\\")
 
     @staticmethod
