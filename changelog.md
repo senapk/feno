@@ -1,5 +1,7 @@
 # Changelog
 
+- 0.4.1
+  - fix: remote_md fix for windows
 - 0.3.8
   - fix: mdpp toc links
 - 0.3.7

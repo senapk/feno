@@ -5,18 +5,6 @@ import argparse
 
 from typing import List, Optional
 
-class Title:
-    @staticmethod
-    def extract_title(readme_file):
-        
-        folder = os.path.basename(os.path.dirname(readme_file))
-
-        title = open(readme_file).read().split("\n")[0]
-        parts = title.split(" ")
-        if parts[0].count("#") == len(parts[0]):
-            del parts[0]
-        title = " ".join(parts)
-        return "@" + folder + ": " + title
 
 class RemoteLink:
     def __init__(self):
@@ -125,17 +113,16 @@ class Absolute:
 
         #trocando todas as imagens com link local
         regex = r"!\[(.*?)\]\((\s*?)([^#:\s]*?)(\s*?)\)"
-        subst = "![\\1](" + remote_raw + "\\3)"
-        result = re.sub(regex, subst, content, 0)
-
+        subst = r"![\1](" + remote_raw + r"\3)"
+        result = re.sub(regex, subst, content, count=0, flags=0)
 
         regex = r"\[(.+?)\]\((\s*?)([^#:\s]*?)(\s*?/)\)"
-        subst = "[\\1](" + remote_folder + "\\3)"
+        subst = r"[\1](" + remote_folder + r"\3)"
         result = re.sub(regex, subst, result, 0)
 
         #trocando todos os links locais cujo conteudo nao seja vazio
         regex = r"\[(.+?)\]\((\s*?)([^#:\s]*?)(\s*?)\)"
-        subst = "[\\1](" + remote_view + "\\3)"
+        subst = r"[\1](" + remote_view + r"\3)"
         result = re.sub(regex, subst, result, 0)
 
         return result
@@ -143,10 +130,10 @@ class Absolute:
     @staticmethod
     def relative_to_absolute(content: str, rl: RemoteLink):
         folder = rl.folder
-        user_repo = os.path.join(rl.user, rl.repo)
-        remote_raw    = os.path.join("https://raw.githubusercontent.com", user_repo, rl.branch , folder)
-        remote_view    = os.path.join("https://github.com/", user_repo, "blob", rl.branch, folder)
-        remote_folder = os.path.join("https://github.com/", user_repo, "tree", rl.branch, folder)
+        user_repo = "/".join([rl.user, rl.repo])
+        remote_raw    = "/".join(["https://raw.githubusercontent.com", user_repo, rl.branch , folder])
+        remote_view    = "/".join(["https://github.com", user_repo, "blob", rl.branch, folder])
+        remote_folder = "/".join(["https://github.com", user_repo, "tree", rl.branch, folder])
         return Absolute.__replace_remote(content, remote_raw, remote_view, remote_folder)
 
 
@@ -163,7 +150,7 @@ class Absolute:
             print(content)
         
 
-def main():
+def main_remote():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('target', metavar='T', type=str, help='folders')
     # arg_parser.add_argument("--remote", "-r", action="store_true", help="convert local file to remote file")
