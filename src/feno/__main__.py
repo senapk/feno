@@ -14,18 +14,12 @@ def main():
     parser.add_argument("--version", "-v", action="store_true", help="Prints the version")
     parser.add_argument("--brief", "-b", action="store_true", help="Brief mode")
     # add parameters to receive all target that should be ignored
+    parser.add_argument("--pymd", "-p", action="store_true", help="Use python markdown instead pandoc")
     parser.add_argument("--remote", "-r", action="store_true", help="Search for remote.cfg file and create absolute links")
     parser.add_argument("--erase", "-e", action="store_true", help="Erase .html and .tio temp files")
 
-    parser.add_argument("--full", "-f", action="store_true", help="Full mode - equivalent to -re")
-    
-
     args = parser.parse_args()
     Log.set_verbose(not args.brief)
-    if args.full:
-        args.tko = True
-        args.remote = True
-        args.erase = True
 
     if args.version:
         print(__version__)
@@ -57,7 +51,7 @@ def main():
             actions.run_local_sh()
             actions.update_markdown() # se os drafts tiverem mudado o markdown precisa ser atualizado
             actions.remote_md()
-            actions.html()
+            actions.html(use_pymd=args.pymd)
             actions.build_cases()
             actions.init_vpl()
             actions.create_mapi()

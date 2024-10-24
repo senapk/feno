@@ -7,3 +7,5 @@
 # PyPI package deployment
 build
 twine
+chardet
+markdown

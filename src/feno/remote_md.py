@@ -88,12 +88,16 @@ class RemoteCfg:
         # if not found, look for it in the parent's parent folder ...
 
         path = os.path.dirname(os.path.abspath(target))
-        while path != "/":
+
+        while True:
             cfg_path = os.path.join(path, "remote.cfg")
             if os.path.isfile(cfg_path):
                 self.cfg_path = cfg_path
                 break
-            path = os.path.dirname(path)
+            new_path = os.path.dirname(path)
+            if new_path == path:
+                break
+            path = new_path
 
 
 class Absolute:

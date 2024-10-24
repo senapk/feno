@@ -1,4 +1,4 @@
-from .Title import Title
+from .title import Title
 from .jsontools import JsonVPL
 from .older import Older
 from .remote_md import Absolute
@@ -78,9 +78,12 @@ class Actions:
         Log.verbose(f"  RemoteFile: {self.remote_readme}")
     
     # uses pandoc to generate html from markdown
-    def html(self):
+    def html(self, use_pymd: bool):
         title = Title.extract_title(self.source_readme)
-        HTML.generate_html_with_pandoc(title, self.remote_readme, self.target_html)
+        if use_pymd:
+            HTML.python_markdown_to_html(title, self.remote_readme, self.target_html)
+        else:
+            HTML.pandoc_markdown_to_html(title, self.remote_readme, self.target_html)
         Log.resume("HTML ", end="")
         Log.verbose(f"  HTML  file: {self.target_html}")
 
