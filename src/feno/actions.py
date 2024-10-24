@@ -1,6 +1,7 @@
+from .Title import Title
 from .jsontools import JsonVPL
 from .older import Older
-from .remote_md import Title, Absolute
+from .remote_md import Absolute
 from .html import HTML
 from .cases import Cases
 from .log import Log

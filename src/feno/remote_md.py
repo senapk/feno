@@ -5,7 +5,6 @@ import argparse
 
 from typing import List, Optional
 
-
 class RemoteLink:
     def __init__(self):
         self.user = ""

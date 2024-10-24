@@ -62,7 +62,7 @@ setup(
                         'code_filter=feno.code_filter:cfmain',
                         'indexer=feno.indexer:main', 
                         'older=feno.older:main',
-                        'remote_md=feno.remote_md:main',
+                        'remote_md=feno.remote_md:main_remote',
                         ], },
 
     project_urls={'Bug Reports': 'https://github.com/senapk/feno/issues',
