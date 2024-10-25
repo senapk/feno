@@ -2,6 +2,7 @@ import enum
 from typing import List, Dict
 import json
 import os
+from .decoder import Decoder
 
 def norm_join(*args):
     return os.path.normpath(os.path.join(*args))
@@ -32,15 +33,15 @@ class JsonVPL:
         self.draft: Dict[str, List[JsonFile]] = {}
 
     def __add_file(self, ftype: JsonFileType, exec_file: str, rename=""):
-        with open(exec_file) as f:
-            file_name = rename if rename != "" else exec_file.split(os.sep)[-1]
-            jfile = JsonFile(file_name, f.read())
-            if ftype == JsonFileType.UPLOAD:
-                self.upload.append(jfile)
-            elif ftype == JsonFileType.KEEP:
-                self.keep.append(jfile)
-            else:
-                self.required.append(jfile)
+        data = Decoder.load(exec_file)
+        file_name = rename if rename != "" else exec_file.split(os.sep)[-1]
+        jfile = JsonFile(file_name, data)
+        if ftype == JsonFileType.UPLOAD:
+            self.upload.append(jfile)
+        elif ftype == JsonFileType.KEEP:
+            self.keep.append(jfile)
+        else:
+            self.required.append(jfile)
     
     def set_cases(self, exec_file: str):
         self.__add_file(JsonFileType.UPLOAD, exec_file, "vpl_evaluate.cases")
@@ -61,9 +62,9 @@ class JsonVPL:
     def add_draft(self, extension: str, exec_file: str):
         if extension not in self.draft:
             self.draft[extension] = []
-        with open(exec_file) as f:
-            jfile = JsonFile(exec_file.split(os.sep)[-1], f.read())
-            self.draft[extension].append(jfile)
+        data = Decoder.load(exec_file)
+        jfile = JsonFile(exec_file.split(os.sep)[-1], data)
+        self.draft[extension].append(jfile)
         return self
 
     def to_json(self) -> str:
@@ -100,6 +101,3 @@ class JsonVPL:
 
     def __str__(self):
         return self.to_json()
-
-
-

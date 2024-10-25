@@ -1,5 +1,5 @@
 import os
-
+from .decoder import Decoder
 
 class Title:
     @staticmethod
@@ -7,7 +7,7 @@ class Title:
 
         folder = os.path.basename(os.path.dirname(readme_file))
 
-        title = open(readme_file).read().split("\n")[0]
+        title = Decoder.load(readme_file).split("\n")[0]
         parts = title.split(" ")
         if parts[0].count("#") == len(parts[0]):
             del parts[0]

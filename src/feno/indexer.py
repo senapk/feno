@@ -6,6 +6,7 @@ from typing import Optional, List
 import re
 import os
 import argparse
+from .decoder import Decoder
 
 
 def get_label(line) -> Optional[str]:
@@ -27,7 +28,8 @@ def get_hook_from_line(line, base) -> Optional[str]:
     return None
 
 def load_title_from_file(path) -> str:
-    header = open(path, 'r').read().split('\n')[0]
+    data = Decoder.load(path)
+    header = data.split('\n')[0]
     if (len(header) == 0):
         print('fail: Empty header in ', path)
         exit(1)
@@ -41,8 +43,7 @@ def load_title_from_file(path) -> str:
     return " ".join(words[1:])
 
 def loading_titles_from_files(path):
-    with open(path, 'r') as file:
-        content = file.read()
+    content = Decoder.load(path)
 
     lines = content.split('\n')
 
@@ -61,8 +62,7 @@ def loading_titles_from_files(path):
                     data = line.replace(match.group(1), title)
         output.append(data)
 
-    with open(path, 'w') as file:
-        file.write('\n'.join(output))
+    Decoder.save(path, '\n'.join(output))
 
 def clear_base(base):
     if base[-1] == '/':
@@ -77,37 +77,37 @@ def found_labels_mismatch(path, base) -> bool:
     error_found = False
     base = clear_base(base)
     print("Checking mismatch in labels")
-    with open(path, 'r') as file:
-        data = file.read()
-        lines = data.split('\n')
+    data = Decoder.load(path)
+    lines = data.split('\n')
 
-        not_ok = []
-        count_ok = 0
-        for line in lines:
-            hook = get_hook_from_line(line, base)
-            if hook is None:
-                continue
-            label = get_label(line)
-            if label is None:
-                print("fail: error in", line)
-                error_found = True
-                continue
-            if label == hook:
-                count_ok += 1
-            else:
-                not_ok.append("    ({} != {}): {}".format(label, hook, os.path.join(base, hook, 'Readme.md')))
-                error_found = True
+    not_ok = []
+    count_ok = 0
+    for line in lines:
+        hook = get_hook_from_line(line, base)
+        if hook is None:
+            continue
+        label = get_label(line)
+        if label is None:
+            print("fail: error in", line)
+            error_found = True
+            continue
+        if label == hook:
+            count_ok += 1
+        else:
+            not_ok.append("    ({} != {}): {}".format(label, hook, os.path.join(base, hook, 'Readme.md')))
+            error_found = True
 
-        print("- verified:", count_ok)
-        print("- mismatch:", len(not_ok))
-        for line in not_ok:
-            print(line)
-        return error_found
+    print("- verified:", count_ok)
+    print("- mismatch:", len(not_ok))
+    for line in not_ok:
+        print(line)
+    return error_found
 
 # check for all folders in the base folder searching for missing labels
 def found_unused_hooks(path, base_dir) -> bool:
     print("Checking for unused hooks")
-    lines = open(path).read().split('\n')
+    data = Decoder.load(path)
+    lines = data.split('\n')
     hooks_all = [get_hook_from_line(line, base_dir) for line in lines]
     # create a set of hooks
     hooks = set(hooks_all)

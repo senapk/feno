@@ -3,6 +3,7 @@ from subprocess import PIPE
 import tempfile
 import argparse
 import markdown
+from .decoder import Decoder
 
 class CssStyle:
     data = "body,li{color:#000}body{line-height:1.4em;max-width:42em;padding:1em;margin:auto}li{margin:.2em 0 0;padding:0}h1,h2,h3,h4,h5,h6{border:0!important}h1,h2{margin-top:.5em;margin-bottom:.5em;border-bottom:2px solid navy!important}h2{margin-top:1em}code,pre{border-radius:3px}pre{overflow:auto;background-color:#f8f8f8;border:1px solid #2f6fab;padding:5px}pre code{background-color:inherit;border:0;padding:0}code{background-color:#ffffe0;border:1px solid orange;padding:0 .2em}a{text-decoration:underline}ol,ul{padding-left:30px}em{color:#b05000}table.text td,table.text th{vertical-align:top;border-top:1px solid #ccc;padding:5px}"
@@ -11,22 +12,19 @@ class CssStyle:
     def get_file():
         if CssStyle.path is None:
             CssStyle.path = tempfile.mktemp(suffix=".css")
-            with open(CssStyle.path, "w") as f:
-                f.write(CssStyle.data)
+            Decoder.save(CssStyle.path, CssStyle.data)
         return CssStyle.path
     
 class HTML:
 
     @staticmethod
     def remove_css_link_from_html(html_file: str):
-        with open(html_file, "r") as f:
-            content = f.read()
+        content = Decoder.load(html_file)
         output = []
         for line in content.split("\n"):
             if not line.startswith('  <link rel="stylesheet"'):
                 output.append(line)
-        with open(html_file, "w") as f:
-            f.write("\n".join(output))
+        Decoder.save(html_file, "\n".join(output))
 
 
 
@@ -56,8 +54,8 @@ class HTML:
         extensions = ['extra', 'codehilite', 'toc']
 
         # Ler o conteúdo do arquivo markdown
-        with open(input_file_md, 'r', encoding='utf-8') as md_file:
-            md_content = md_file.read()
+
+        md_content = Decoder.load(input_file_md)
 
         # Converter markdown para HTML com as extensões
         html_content = markdown.markdown(md_content, extensions=extensions)
@@ -82,8 +80,7 @@ class HTML:
         """
 
         # Escrever o HTML gerado no arquivo de saída
-        with open(output_file_html, 'w', encoding='utf-8') as html_file:
-            html_file.write(html_template)
+        Decoder.save(output_file_html, html_template)
 
         print(f'Arquivo HTML gerado em: {output_file_html}')
 

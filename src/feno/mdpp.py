@@ -8,15 +8,8 @@ import enum
 from typing import Optional, List, Tuple
 from .filter import Filter
 from .__init__ import __version__
+from .decoder import Decoder
 
-
-def fread(path):
-    with open(path, "r", encoding='utf-8') as f:
-        return f.read()
-
-def fwrite(path, content):
-    with open(path, "w", encoding='utf-8') as f:
-        f.write(content)
 
 class Action(enum.Enum):
     RUN = 1
@@ -237,23 +230,25 @@ class Load:
                     new_content += "\n```" + ext + "\n"
                 if os.path.isfile(abspath):
                     if len(filter) > 0:
-                        data = Filter(path).process(open(abspath).read()) + "\n"
+                        data = Filter(path).process(Decoder.load(abspath)) + "\n"
                         new_content += data
                         if data[-1] != "\n":
                             new_content += "\n"
                     elif len(rmcom) > 0:
-                        data =  Load.rmcom(abspath, fread(abspath)) + "\n"
+                        full_data = Decoder.load(abspath)
+                        data =  Load.rmcom(abspath, full_data) + "\n"
                         new_content += data
                         if data[-1] != "\n":
                             new_content += "\n"
                     elif len(extract) > 0:
                         tag = extract[0].split("=")[1]
-                        data = Load.extract_between_tags(fread(abspath), tag)
+                        full_data = Decoder.load(abspath)
+                        data = Load.extract_between_tags(full_data, tag)
                         new_content += data
                         if len(data) == 0 or data[-1] != "\n":
                             new_content += "\n"
                     else:
-                        data = fread(abspath)
+                        data = Decoder.load(abspath)
                         new_content += data
                         if data[-1] != "\n":
                             new_content += "\n"
@@ -281,11 +276,10 @@ class Save:
             content = match.group(2)
             exists = os.path.isfile(path)
             if exists:
-                content_old = fread(path)
+                content_old = Decoder.load(path)
             if not exists or content != content_old:
-                with open(path, "w") as f:
-                    print("file", path, "updated")
-                    f.write(content)
+                Decoder.save(path, content)
+                print("file", path, "updated")
 
 class Main:
     @staticmethod
@@ -298,7 +292,7 @@ class Main:
     @staticmethod
     def open_file(path): 
         if os.path.isfile(path):
-            file_content = fread(path)
+            file_content = Decoder.load(path)
             return True, file_content
         print("Warning: File", path, "not found")
         return False, "" 
@@ -321,8 +315,8 @@ class Mdpp:
         Save.execute(updated)
         
         if updated != original:
-            fwrite(path, updated)
-            hook = os.path.abspath(path).split(os.sep)[-2]
+            Decoder.save(path, updated)
+            # hook = os.path.abspath(path).split(os.sep)[-2]
             return True
 
         return False

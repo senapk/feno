@@ -1,5 +1,7 @@
 # Changelog
 
+- 0.5.0
+  - add: Decoder class to decode load and save any file
 - 0.4.1
   - fix: remote_md fix for windows
 - 0.3.8

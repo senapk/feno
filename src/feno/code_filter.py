@@ -3,6 +3,7 @@ import os
 import argparse
 from typing import Tuple
 import shutil
+from .decoder import Decoder
 
 class Mark:
     def __init__(self, marker, indent):
@@ -144,19 +145,17 @@ class DeepFilter:
 
             if not any([filename.endswith(ext) for ext in self.extensions]):
                 return
-            content = open(source, "r").read()
+
+            content = Decoder.load(source)
 
             processed = Filter(filename).process(content)
 
             if self.cheat_mode:
                 if processed != content:
                     cleaned = clean_com(source, content)
-                    with open(destiny, "w") as f:
-                        f.write(cleaned)
+                    Decoder.save(destiny, cleaned)
             elif processed != "":
-                with open(destiny, "w") as f:
-                    f.write(processed)
-            
+                Decoder.save(destiny, processed)
 
             line = ""
             if self.cheat_mode:
@@ -179,9 +178,8 @@ class CodeFilter:
     @staticmethod
     def open_file(path): 
         if os.path.isfile(path):
-            with open(path) as f:
-                file_content = f.read()
-                return True, file_content
+            file_content = Decoder.load(path)
+            return True, file_content
         print("Warning: File", path, "not found")
         return False, "" 
 
@@ -221,14 +219,13 @@ class CodeFilter:
 
             if output:
                 if os.path.isfile(output):
-                    old = open(output).read()
+                    old = Decoder.load(output)
                     if old != content:
-                        open(output, "w").write(content)
-                else:                
-                    open(output, "w").write(content)
+                        Decoder.save(output, content)
+                else:
+                    Decoder.save(output, content)
             elif update:
-                with open(file, "w") as f:
-                    f.write(content)
+                Decoder.save(file, content)
             else:
                 print(content)
 

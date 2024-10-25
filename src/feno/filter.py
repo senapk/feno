@@ -4,6 +4,7 @@ import argparse
 from typing import Tuple
 import shutil
 from .code_filter import Filter as CodeFilter
+from .decoder import Decoder
 
 from .__init__ import __version__
 
@@ -175,18 +176,17 @@ class DeepFilter:
 
             if not any([filename.endswith(ext) for ext in self.extensions]):
                 return
-            content = open(source, "r").read()
+            
+            content = Decoder.load(source)
 
             processed = Filter(filename).process(content)
 
             if self.cheat_mode:
                 if processed != content:
                     cleaned = clean_com(source, content)
-                    with open(destiny, "w") as f:
-                        f.write(cleaned)
+                    Decoder.save(destiny, cleaned)
             elif processed != "":
-                with open(destiny, "w") as f:
-                    f.write(processed)
+                Decoder.save(destiny, processed)
             
 
             line = ""
@@ -208,9 +208,8 @@ class DeepFilter:
 
 def open_file(path): 
         if os.path.isfile(path):
-            with open(path) as f:
-                file_content = f.read()
-                return True, file_content
+            file_content = Decoder.load(path)
+            return True, file_content
         print("Warning: File", path, "not found")
         return False, "" 
 
@@ -265,7 +264,6 @@ def main():
     file = args.target
     success, content = open_file(file)
     if success:
-
         if args.cheat:
             content = clean_com(file, content)
         else:
@@ -273,14 +271,13 @@ def main():
 
         if args.output:
             if os.path.isfile(args.output):
-                old = open(args.output).read()
+                old = Decoder.load(args.output)
                 if old != content:
-                    open(args.output, "w").write(content)
+                    Decoder.save(args.output, content)
             else:                
-                open(args.output, "w").write(content)
+                Decoder.save(args.output, content)
         elif args.update:
-            with open(file, "w") as f:
-                f.write(content)
+            Decoder.save(file, content)
         else:
             print(content)
 

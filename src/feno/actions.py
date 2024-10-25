@@ -7,6 +7,7 @@ from .cases import Cases
 from .log import Log
 from .mdpp import Mdpp
 from .filter import DeepFilter
+from .decoder import Decoder
 
 from typing import Optional
 import subprocess
@@ -78,12 +79,12 @@ class Actions:
         Log.verbose(f"  RemoteFile: {self.remote_readme}")
     
     # uses pandoc to generate html from markdown
-    def html(self, use_pymd: bool):
+    def html(self, use_pandoc: bool):
         title = Title.extract_title(self.source_readme)
-        if use_pymd:
-            HTML.python_markdown_to_html(title, self.remote_readme, self.target_html)
-        else:
+        if use_pandoc:
             HTML.pandoc_markdown_to_html(title, self.remote_readme, self.target_html)
+        else:
+            HTML.python_markdown_to_html(title, self.remote_readme, self.target_html)
         Log.resume("HTML ", end="")
         Log.verbose(f"  HTML  file: {self.target_html}")
 
@@ -112,7 +113,8 @@ class Actions:
             Log.resume("Local.sh ", end="")
 
     def init_vpl(self):
-        self.vpl = JsonVPL(self.title, open(self.target_html).read())
+        html_content = Decoder.load(self.target_html)
+        self.vpl = JsonVPL(self.title, html_content)
         self.vpl.set_cases(self.cases)
         if self.vpl.load_config_json(self.config_json, self.source_dir):
             Log.resume("Required ", end="")
@@ -121,7 +123,7 @@ class Actions:
             Log.resume("Drafts ", end="")
 
     def create_mapi(self):
-        open(self.mapi_json, "w").write(str(self.vpl) + "\n")
+        Decoder.save(self.mapi_json, str(self.vpl) + "\n")
         Log.resume("Mapi ", end="")
         Log.verbose(f"  Mapi  file: {self.mapi_json}")
 
