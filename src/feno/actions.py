@@ -75,7 +75,7 @@ class Actions:
         return True
     
     def remote_md(self):
-        Absolute.convert_or_copy_or_print(self.source_readme, self.remote_readme)
+        Absolute.convert_or_copy_or_print(self.source_readme, self.remote_readme, self.make_remote)
         Log.verbose(f"  RemoteFile: {self.remote_readme}")
     
     # uses pandoc to generate html from markdown

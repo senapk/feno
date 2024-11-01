@@ -3,7 +3,7 @@ import re
 import configparser
 import argparse
 from .decoder import Decoder
-
+from .text import Text
 from typing import List, Optional
 
 class RemoteLink:
@@ -49,12 +49,15 @@ class RemoteLink:
         return self
 
 class RemoteCfg:
-    def __init__(self, target: str):
+    def __init__(self, target: str, make_remote: bool):
         self.target = target
         self.remote: RemoteLink = RemoteLink()
         self.cfg_path: str | None = None
-        self.__load_cfg_path(target)
-        self.__parse_cfg()
+        if make_remote:
+            self.__load_cfg_path(target)
+            self.__parse_cfg()
+            if self.cfg_path is None:
+                print(Text("{r}: remote.cfg file not set", "fail"))
 
     def cfg_exists(self):
         return self.cfg_path is not None
@@ -142,9 +145,9 @@ class Absolute:
 
 
     @staticmethod
-    def convert_or_copy_or_print(source: str, target: str | None):
+    def convert_or_copy_or_print(source: str, target: str | None, make_remote: bool = False):
         content = Decoder.load(source)
-        cfg = RemoteCfg(source)
+        cfg = RemoteCfg(source, make_remote)
         if cfg.cfg_exists():
             content = Absolute.relative_to_absolute(content, cfg.calc_link_for_local_file())
         if target is not None:
