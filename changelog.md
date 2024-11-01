@@ -1,5 +1,8 @@
 # Changelog
 
+- 0.5.2
+  - fix: Decoder to try utf8 if confidence is low
+  - fix: splitlines instead split
 - 0.5.0
   - add: Decoder class to decode load and save any file
 - 0.4.1

@@ -41,7 +41,7 @@ class LegacyFilter:
             self.com = "'"
 
     def process(self, content: str) -> str:
-        lines = content.split("\n")
+        lines = content.splitlines()
         output = []
         for line in lines:
             if line[-(3 + len(self.com)):-1] == self.com + "++":
@@ -100,7 +100,7 @@ class Filter:
 
 
     def __process(self, content: str) -> str:
-        lines = content.split("\n")
+        lines = content.splitlines()
         output = []
         for line in lines:
             # print(line)
@@ -130,7 +130,7 @@ class Filter:
 
 def clean_com(target: str, content: str) -> str:
     com = get_comment(target)
-    lines = content.split("\n")
+    lines = content.splitlines()
     output = [line for line in lines if not line.lstrip().startswith(com)]
     return "\n".join(output)
 

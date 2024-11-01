@@ -29,7 +29,7 @@ def get_hook_from_line(line, base) -> Optional[str]:
 
 def load_title_from_file(path) -> str:
     data = Decoder.load(path)
-    header = data.split('\n')[0]
+    header = data.splitlines()[0]
     if (len(header) == 0):
         print('fail: Empty header in ', path)
         exit(1)
@@ -46,7 +46,7 @@ def loading_titles_from_files(path):
     print("debug", path)
     content = Decoder.load(path)
 
-    lines = content.split('\n')
+    lines = content.splitlines()
 
     output = []
 
@@ -79,7 +79,7 @@ def found_labels_mismatch(path, base) -> bool:
     base = clear_base(base)
     print("Checking mismatch in labels")
     data = Decoder.load(path)
-    lines = data.split('\n')
+    lines = data.splitlines()
 
     not_ok = []
     count_ok = 0
@@ -108,7 +108,7 @@ def found_labels_mismatch(path, base) -> bool:
 def found_unused_hooks(path, base_dir) -> bool:
     print("Checking for unused hooks")
     data = Decoder.load(path)
-    lines = data.split('\n')
+    lines = data.splitlines()
     hooks_all = [get_hook_from_line(line, base_dir) for line in lines]
     # create a set of hooks
     hooks = set(hooks_all)

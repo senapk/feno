@@ -68,7 +68,7 @@ class TocMaker:
     def __extract_entries(content: str) -> List[Tuple[int, str]]:
         content = TocMaker.__remove_code_fences(content)
 
-        lines = content.split("\n")
+        lines = content.splitlines()
         disable_tag = "[]()"
         lines = [line for line in lines if TocMaker.__only_hashtags(line.split(" ")[0]) and line.find(disable_tag) == -1]
 
@@ -174,7 +174,7 @@ class Load:
             com = "#"
         if target.endswith(".puml"):
             com = "'"
-        lines = content.split("\n")
+        lines = content.splitlines()
         output = []
         for line in lines:
             if not line.lstrip().startswith(com):

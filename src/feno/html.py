@@ -21,7 +21,7 @@ class HTML:
     def remove_css_link_from_html(html_file: str):
         content = Decoder.load(html_file)
         output = []
-        for line in content.split("\n"):
+        for line in content.splitlines():
             if not line.startswith('  <link rel="stylesheet"'):
                 output.append(line)
         Decoder.save(html_file, "\n".join(output))

@@ -5,6 +5,8 @@ import os
 from .actions import Actions
 from .__init__ import __version__
 from .log import Log
+from .debug import Db
+
 
 
 def main():
@@ -17,6 +19,7 @@ def main():
     parser.add_argument("--pandoc", "-p", action="store_true", help="Use pandoc rather than python markdown")
     parser.add_argument("--remote", "-r", action="store_true", help="Search for remote.cfg file and create absolute links")
     parser.add_argument("--erase", "-e", action="store_true", help="Erase .html and .tio temp files")
+    parser.add_argument("--debug", "-d", action='store_true', help="Display debug msgs")
 
     args = parser.parse_args()
     Log.set_verbose(not args.brief)
@@ -28,6 +31,9 @@ def main():
     if len(args.targets) == 0:
         print("fail: No targets specified")
         exit(1)
+
+    if args.debug:
+        Db.enable = True
 
     for target in args.targets:
         hook = os.path.basename(os.path.abspath(target))
