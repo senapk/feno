@@ -16,7 +16,7 @@ class Decoder:
                 content = raw_data.decode(encoding)
             except UnicodeDecodeError as e:
                 content = raw_data.decode(enc_dict["encoding"])
-            return content
+            return content.replace("\r\n", "\n")
 
     @staticmethod
     def save(file_path: str, content: str):

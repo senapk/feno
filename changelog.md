@@ -1,5 +1,8 @@
 # Changelog
 
+- 0.6.0
+  - fix: code_filter
+  - remove: legacy filter mode
 - 0.5.2
   - fix: Decoder to try utf8 if confidence is low
   - fix: splitlines instead split

@@ -3,17 +3,7 @@ import os
 import argparse
 from typing import Tuple
 import shutil
-from .code_filter import Filter as CodeFilter
 from .decoder import Decoder
-
-from .__init__ import __version__
-
-# modes
-# == RAW
-# ++ CUT
-# -- DEL
-# $$ RM_COM
-# && ADD_COM
 
 class Mark:
     def __init__(self, marker, indent):
@@ -21,45 +11,14 @@ class Mark:
         self.indent: int = indent
 
     def __str__(self):
-        return f"{self.marker}{self.indent}"
+        return f"{self.marker}:{self.indent}"
 
-class Mode(enum.Enum):
-    ADD = 1 # inserir cortando por degrau
-    RAW = 2 # inserir tudo
-    DEL = 3 # apagar tudo
-
-
-class LegacyFilter:
-    def __init__(self, filename: str):
-        super().__init__()
-        self.mode = Mode.RAW
-        self.level = 1
-        self.com = "//"
-        if filename.endswith(".py"):
-            self.com = "#"
-        elif filename.endswith(".puml"):
-            self.com = "'"
-
-    def process(self, content: str) -> str:
-        lines = content.splitlines()
-        output = []
-        for line in lines:
-            if line[-(3 + len(self.com)):-1] == self.com + "++":
-                self.mode = Mode.ADD
-                self.level = int(line[-1])
-            elif line == self.com + "==":
-                self.mode = Mode.RAW
-            elif line == self.com + "--":
-                self.mode = Mode.DEL
-            elif self.mode == Mode.DEL:
-                continue
-            elif self.mode == Mode.RAW:
-                output.append(line)
-            elif self.mode == Mode.ADD:
-                margin = (self.level + 1) * "    "
-                if not line.startswith(margin):
-                    output.append(line)
-        return "\n".join(output)
+class Mode:
+    ADD = "ADD!"
+    COM = "COM!"
+    ACT = "ACT!"
+    DEL = "DEL!"
+    opts = [ADD, COM, ACT, DEL]
 
 def get_comment(filename: str) -> str:
     com = "//"
@@ -72,7 +31,7 @@ def get_comment(filename: str) -> str:
 class Filter:
     def __init__(self, filename):
         self.filename = filename
-        self.stack = [Mark("==", 0)]
+        self.stack = [Mark(Mode.ADD, 0)]
         self.com = get_comment(filename)
 
     def get_marker(self) -> str:
@@ -82,50 +41,60 @@ class Filter:
         return self.stack[-1].indent
 
     def outside_scope(self, line):
+        stripped = line.strip()
         left_spaces = len(line) - len(line.lstrip())
-        return left_spaces < self.get_indent()
+        return stripped != "" and left_spaces < self.get_indent()
 
-    def parse_mode(self, line):
-        marker_list = ["$$", "++", "==", "--", "&&"]
-        with_left = line.rstrip()
-        word = with_left.lstrip()
-        for marker in marker_list:
-            if word == self.com + " " + marker:
-                len_spaces = len(with_left) - len(self.com + " " + marker)
-                while len(self.stack) > 0 and self.stack[-1].indent >= len_spaces:
-                    self.stack.pop()
-                self.stack.append(Mark(marker, len_spaces))
+    def has_single_mode_cmd(self, line: str) -> bool:
+        for marker in Mode.opts:
+            if line.strip() == self.com + marker:
                 return True
         return False
 
+    def change_mode(self, line: str):
+        with_left = line.rstrip()
+        marker = with_left.lstrip()[len(self.com):]
+        len_spaces = len(with_left) - len(self.com + marker)
+        while len(self.stack) > 0 and self.stack[-1].indent >= len_spaces:
+            self.stack.pop()
+        self.stack.append(Mark(marker, len_spaces))
+
+    def search_temp_mode(self, line: str) -> Tuple[str, str]:
+        for marker in Mode.opts:
+            if line.endswith(self.com + marker):
+                return marker, line[:-len(self.com + marker)]
+        return "---", line
 
     def __process(self, content: str) -> str:
-        lines = content.splitlines()
+        lines = content.splitlines(keepends=True)
         output = []
         for line in lines:
-            # print(line)
-            # print(", ".join([str(st) for st in self.stack]))
-            while self.outside_scope(line) and self.get_marker() != "++":
+            while self.outside_scope(line):
                 self.stack.pop()
-            if self.parse_mode(line):
+            if self.has_single_mode_cmd(line):
+                self.change_mode(line)
                 continue
-            elif self.get_marker() == "--":
+            pre_marker = self.get_marker()
+            pos_marker, line = self.search_temp_mode(line)
+            marker = pos_marker if pos_marker != "---" else pre_marker
+
+            if marker == Mode.DEL:
                 continue
-            elif self.get_marker() == "==":
+            elif marker == Mode.ADD:
                 output.append(line)
-            elif self.get_marker() == "$$":
-                line = line.replace(" " * self.get_indent() + self.com + " ", " " * self.get_indent(), 1)
+            elif marker == Mode.ACT:
+                prefix = " " * self.get_indent() + self.com + " "
+                if not line.startswith(prefix):
+                    prefix = prefix[:-1]
+                line = line.replace(prefix, " " * self.get_indent(), 1)
                 output.append(line)
-            elif self.get_marker() == "&&":
+            elif marker == Mode.COM:
                 line = " " * self.get_indent() + self.com + " " + line[self.get_indent():]
                 output.append(line)
-            elif self.get_marker() == "++" and not line.startswith((1 + self.get_indent()) * " "):
-                output.append(line)
-        return "\n".join(output)
+
+        return "".join(output)
     
     def process(self, content: str) -> str:
-        content = LegacyFilter(self.filename).process(content)
-        content = CodeFilter(self.filename).process(content)
         return self.__process(content)
 
 def clean_com(target: str, content: str) -> str:
@@ -135,7 +104,7 @@ def clean_com(target: str, content: str) -> str:
     return "\n".join(output)
 
 class DeepFilter:
-    extensions = [".md", ".c", ".cpp", ".h", ".hpp", ".py", ".java", ".js", ".ts", ".hs", ".txt"]
+    extensions = [".md", ".c", ".cpp", ".h", ".hpp", ".py", ".java", ".js", ".ts", ".hs", ".txt", ".go"]
 
     def __init__(self):
         self.cheat_mode = False
@@ -144,11 +113,11 @@ class DeepFilter:
     
     def print(self, *args, **kwargs):
         if not self.quiet_mode:
-            print(" " * self.indent, end="")
+            print(self.indent, end="")
             print(*args, **kwargs)
 
-    def set_indent(self, prefix: str):
-        self.indent = prefix
+    def set_indent(self, prefix: int):
+        self.indent = prefix * " "
         return self
 
     def set_quiet(self, value):
@@ -176,7 +145,7 @@ class DeepFilter:
 
             if not any([filename.endswith(ext) for ext in self.extensions]):
                 return
-            
+
             content = Decoder.load(source)
 
             processed = Filter(filename).process(content)
@@ -187,7 +156,6 @@ class DeepFilter:
                     Decoder.save(destiny, cleaned)
             elif processed != "":
                 Decoder.save(destiny, processed)
-            
 
             line = ""
             if self.cheat_mode:
@@ -206,23 +174,67 @@ class DeepFilter:
 
             self.print(line)
 
-def open_file(path): 
+class CodeFilter:
+    @staticmethod
+    def open_file(path): 
         if os.path.isfile(path):
             file_content = Decoder.load(path)
             return True, file_content
         print("Warning: File", path, "not found")
         return False, "" 
 
+    @staticmethod
+    def cf_recursive(target_dir: str, output_dir: str, force: bool, cheat: bool = False, quiet: bool = False, indent: int = 0):
+        if output_dir is None:
+                print("Error: output is required in recursive mode")
+                exit()
+        if not os.path.isdir(target_dir):
+            print("Error: target must be a folder in recursive mode")
+            exit()
+        if os.path.exists(output_dir):
+            if not force:
+                print("Error: output folder already exists")
+                exit()
+            else:
+                # recursive delete all folder content without deleting the folder itself
+                for file in os.listdir(output_dir):
+                    path = os.path.join(output_dir, file)
+                    if os.path.isdir(path):
+                        shutil.rmtree(path)
+                    else:
+                        os.remove(path)
 
+        deep_filter = DeepFilter().set_cheat(cheat).set_quiet(quiet).set_indent(indent)
+        deep_filter.copy(target_dir, output_dir, 10)
 
+    @staticmethod
+    def cf_single_file(target, output, update, cheat):
+        file = target
+        success, content = CodeFilter.open_file(file)
+        if success:
+            if cheat:
+                content = clean_com(file, content)
+            else:
+                content = Filter(file).process(content)
 
-def main():
+            if output:
+                if os.path.isfile(output):
+                    old = Decoder.load(output)
+                    if old != content:
+                        Decoder.save(output, content)
+                else:
+                    Decoder.save(output, content)
+            elif update:
+                Decoder.save(file, content)
+            else:
+                print(content)
+
+def cfmain():
     parser = argparse.ArgumentParser()
     parser.add_argument('target', type=str, help='file or folder to process')
     parser.add_argument('-u', '--update', action="store_true", help='update source file')
     parser.add_argument('-c', '--cheat', action="store_true", help='recursive cheat mode cleaning comments on students files')
     parser.add_argument('-o', '--output', type=str, help='output target')
-    parser.add_argument("-v", '--version', action="store_true", help='print version')
     parser.add_argument("-r", "--recursive", action="store_true", help="recursive mode")
     parser.add_argument("-f", "--force", action="store_true", help="force mode")
     parser.add_argument("-q", "--quiet", action="store_true", help="quiet mode")
@@ -230,56 +242,14 @@ def main():
 
     args = parser.parse_args()
 
-    if args.version:
-        print(__version__)
-        exit()
-
     if args.cheat:
         args.recursive = True
 
     if args.recursive:
-        if args.output is None:
-            print("Error: output is required in recursive mode")
-            exit()
-        if not os.path.isdir(args.target):
-            print("Error: target must be a folder in recursive mode")
-            exit()
-        if os.path.exists(args.output):
-            if not args.force:
-                print("Error: output folder already exists")
-                exit()
-            else:
-                # recursive delete all folder content without deleting the folder itself
-                for file in os.listdir(args.output):
-                    path = os.path.join(args.output, file)
-                    if os.path.isdir(path):
-                        shutil.rmtree(path)
-                    else:
-                        os.remove(path)
-
-        deep_filter = DeepFilter().set_cheat(args.cheat).set_quiet(args.quiet).set_indent(args.indent)
-        deep_filter.copy(args.target, args.output, 10)
+        CodeFilter.cf_recursive(args.target, args.output, force=args.force, cheat=args.cheat, quiet=args.quiet, indent=args.indent)
         exit()
 
-    file = args.target
-    success, content = open_file(file)
-    if success:
-        if args.cheat:
-            content = clean_com(file, content)
-        else:
-            content = Filter(file).process(content)
-
-        if args.output:
-            if os.path.isfile(args.output):
-                old = Decoder.load(args.output)
-                if old != content:
-                    Decoder.save(args.output, content)
-            else:                
-                Decoder.save(args.output, content)
-        elif args.update:
-            Decoder.save(file, content)
-        else:
-            print(content)
+    CodeFilter.cf_single_file(args.target, args.output, args.update, args.cheat)
 
 if __name__ == '__main__':
-    main()
+    cfmain()
