@@ -1,4 +1,3 @@
-import enum
 import os
 import argparse
 from typing import Tuple
@@ -46,27 +45,28 @@ class Filter:
         return stripped != "" and left_spaces < self.get_indent()
 
     def has_single_mode_cmd(self, line: str) -> bool:
+        stripped = line.strip()
         for marker in Mode.opts:
-            if line.strip() == self.com + marker:
+            if stripped == self.com + " " + marker:
                 return True
         return False
 
     def change_mode(self, line: str):
         with_left = line.rstrip()
-        marker = with_left.lstrip()[len(self.com):]
-        len_spaces = len(with_left) - len(self.com + marker)
+        marker = with_left.lstrip()[len(self.com) + 1:]
+        len_spaces = len(with_left) - len(self.com + marker + " ")
         while len(self.stack) > 0 and self.stack[-1].indent >= len_spaces:
             self.stack.pop()
         self.stack.append(Mark(marker, len_spaces))
 
     def search_temp_mode(self, line: str) -> Tuple[str, str]:
         for marker in Mode.opts:
-            if line.endswith(self.com + marker):
-                return marker, line[:-len(self.com + marker)]
+            if line.rstrip().endswith(self.com + " " + marker):
+                return marker, line[:-len(self.com + marker + " ")]
         return "---", line
 
     def __process(self, content: str) -> str:
-        lines = content.splitlines(keepends=True)
+        lines = content.splitlines()
         output = []
         for line in lines:
             while self.outside_scope(line):
@@ -74,9 +74,10 @@ class Filter:
             if self.has_single_mode_cmd(line):
                 self.change_mode(line)
                 continue
-            pre_marker = self.get_marker()
+            marker = self.get_marker()
             pos_marker, line = self.search_temp_mode(line)
-            marker = pos_marker if pos_marker != "---" else pre_marker
+            if pos_marker != "---":
+                marker = pos_marker
 
             if marker == Mode.DEL:
                 continue
@@ -92,7 +93,7 @@ class Filter:
                 line = " " * self.get_indent() + self.com + " " + line[self.get_indent():]
                 output.append(line)
 
-        return "".join(output)
+        return "\n".join(output) + "\n"
     
     def process(self, content: str) -> str:
         return self.__process(content)
