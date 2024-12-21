@@ -54,14 +54,13 @@ setup(
 
     entry_points={'console_scripts': [
                         'feno=feno.__main__:main', 
-                        'feno_lock=feno.lock:lock', 
-                        'feno_unlock=feno.lock:unlock', 
                         'mdpp=feno.mdpp:main', 
                         'md2html=feno.html:main',
                         'code_filter=feno.filter:cfmain',
                         'indexer=feno.indexer:main', 
                         'older=feno.older:main',
                         'remote_md=feno.remote_md:main_remote',
+                        'collect=feno.collect:main'
                         ], },
 
     project_urls={'Bug Reports': 'https://github.com/senapk/feno/issues',
